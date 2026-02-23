@@ -13,53 +13,64 @@
       --accent: #7c6af7; --accent2: #f76a8a; --accent3: #6af7c8;
       --text: #e8e8f0; --muted: #6b6b8a;
     }
-    html, body { width: 100%; height: 100%; overflow: hidden; }
+
+    html {
+      width: 100%;
+      height: 100%;
+    }
+
     body {
-      background: var(--bg); color: var(--text);
+      width: 100%;
+      height: 100vh;
+      background: var(--bg);
+      color: var(--text);
       font-family: 'Syne', sans-serif;
-      display: flex; flex-direction: column;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 14px;
     }
-    body::before {
-      content: ''; position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none; z-index: 100; opacity: 0.6;
-    }
-    .wrapper {
-      flex: 1; display: flex; flex-direction: column;
-      padding: 14px; gap: 10px; min-height: 0;
-    }
+
+    /* ── HEADER ── */
     header {
-      display: flex; justify-content: space-between; align-items: center;
-      flex-shrink: 0; animation: fadeDown 0.6s ease both;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .logo {
-      font-size: clamp(0.85rem, 2vw, 1.3rem); font-weight: 800;
+      font-size: clamp(0.85rem, 2vw, 1.3rem);
+      font-weight: 800;
       letter-spacing: -0.03em;
       background: linear-gradient(135deg, var(--accent), var(--accent3));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
     .date {
       font-family: 'DM Mono', monospace;
       font-size: clamp(0.55rem, 1vw, 0.7rem);
-      color: var(--muted); letter-spacing: 0.08em;
+      color: var(--muted);
     }
+
+    /* ── KPI ROW ── */
     .kpi-row {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 8px; flex-shrink: 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
     }
     .kpi {
-      background: var(--surface); border: 1px solid var(--border);
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: clamp(8px, 1.5vh, 16px) clamp(10px, 1.5vw, 18px);
-      position: relative; overflow: hidden;
-      animation: fadeUp 0.5s ease both;
+      position: relative;
+      overflow: hidden;
     }
-    .kpi:nth-child(1) { animation-delay: 0.1s; }
-    .kpi:nth-child(2) { animation-delay: 0.2s; }
-    .kpi:nth-child(3) { animation-delay: 0.3s; }
     .kpi::after {
-      content: ''; position: absolute; top: 0; right: 0;
-      width: 55px; height: 55px; border-radius: 50%; opacity: 0.12;
+      content: '';
+      position: absolute; top: 0; right: 0;
+      width: 55px; height: 55px;
+      border-radius: 50%; opacity: 0.15;
       transform: translate(30%, -30%);
     }
     .kpi:nth-child(1)::after { background: var(--accent); }
@@ -72,8 +83,8 @@
       letter-spacing: 0.1em; margin-bottom: 4px;
     }
     .kpi-value {
-      font-size: clamp(1.1rem, 2.5vw, 1.9rem); font-weight: 800;
-      letter-spacing: -0.04em; line-height: 1;
+      font-size: clamp(1.1rem, 2.5vw, 1.9rem);
+      font-weight: 800; letter-spacing: -0.04em; line-height: 1;
     }
     .kpi:nth-child(1) .kpi-value { color: var(--accent); }
     .kpi:nth-child(2) .kpi-value { color: var(--accent2); }
@@ -84,73 +95,86 @@
       color: var(--accent3); margin-top: 3px;
     }
     .kpi-delta.neg { color: var(--accent2); }
+
+    /* ── CHARTS ── */
     .charts-grid {
-      display: grid; grid-template-columns: 2fr 1fr;
-      gap: 8px; flex: 1; min-height: 0;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 8px;
+      min-height: 0; /* critical for grid children */
     }
     .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: clamp(10px, 1.5vw, 18px);
-      display: flex; flex-direction: column; min-height: 0;
-      animation: fadeUp 0.5s ease both;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: clamp(10px, 1.5vw, 18px);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
-    .card:nth-child(1) { animation-delay: 0.35s; }
-    .card:nth-child(2) { animation-delay: 0.45s; }
     .card-title {
       font-family: 'DM Mono', monospace;
       font-size: clamp(0.5rem, 0.85vw, 0.65rem);
       color: var(--muted); text-transform: uppercase;
-      letter-spacing: 0.12em; margin-bottom: 8px; flex-shrink: 0;
+      letter-spacing: 0.12em; margin-bottom: 8px;
+      flex-shrink: 0;
     }
-    .chart-wrap { flex: 1; min-height: 0; position: relative; }
-    canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to { opacity: 1; transform: translateY(0); }
+    .chart-wrap {
+      position: relative;
+      flex: 1;
+      min-height: 0;
     }
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
+    canvas {
+      position: absolute !important;
+      top: 0; left: 0;
+      width: 100% !important;
+      height: 100% !important;
     }
   </style>
 </head>
 <body>
-  <div class="wrapper">
-    <header>
-      <div class="logo">ANALYTICS</div>
-      <div class="date" id="dt"></div>
-    </header>
-    <div class="kpi-row">
-      <div class="kpi">
-        <div class="kpi-label">Выручка</div>
-        <div class="kpi-value">₽2.4M</div>
-        <div class="kpi-delta">▲ +18.2% vs прошлый мес.</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Новые пользователи</div>
-        <div class="kpi-value">8 341</div>
-        <div class="kpi-delta neg">▼ −3.1% vs прошлый мес.</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Конверсия</div>
-        <div class="kpi-value">4.7%</div>
-        <div class="kpi-delta">▲ +0.9% vs прошлый мес.</div>
+
+  <header>
+    <div class="logo">ANALYTICS</div>
+    <div class="date" id="dt"></div>
+  </header>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Выручка</div>
+      <div class="kpi-value">₽2.4M</div>
+      <div class="kpi-delta">▲ +18.2% vs прошлый мес.</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Новые пользователи</div>
+      <div class="kpi-value">8 341</div>
+      <div class="kpi-delta neg">▼ −3.1% vs прошлый мес.</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Конверсия</div>
+      <div class="kpi-value">4.7%</div>
+      <div class="kpi-delta">▲ +0.9% vs прошлый мес.</div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="card">
+      <div class="card-title">Динамика выручки · 2024</div>
+      <div class="chart-wrap">
+        <canvas id="lineChart"></canvas>
       </div>
     </div>
-    <div class="charts-grid">
-      <div class="card">
-        <div class="card-title">Динамика выручки · 2024</div>
-        <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Каналы трафика</div>
-        <div class="chart-wrap"><canvas id="doughnutChart"></canvas></div>
+    <div class="card">
+      <div class="card-title">Каналы трафика</div>
+      <div class="chart-wrap">
+        <canvas id="doughnutChart"></canvas>
       </div>
     </div>
   </div>
+
   <script>
-    const d = new Date();
-    document.getElementById('dt').textContent = d.toLocaleDateString('ru-RU', {
+    // Date
+    document.getElementById('dt').textContent = new Date().toLocaleDateString('ru-RU', {
       day: '2-digit', month: 'long', year: 'numeric'
     }).toUpperCase();
 
@@ -158,33 +182,38 @@
     Chart.defaults.font.family = "'DM Mono', monospace";
     Chart.defaults.font.size = 10;
 
-    const lineCtx = document.getElementById('lineChart').getContext('2d');
-    const g1 = lineCtx.createLinearGradient(0, 0, 0, 300);
-    g1.addColorStop(0, 'rgba(124,106,247,0.3)'); g1.addColorStop(1, 'rgba(124,106,247,0)');
-    const g2 = lineCtx.createLinearGradient(0, 0, 0, 300);
-    g2.addColorStop(0, 'rgba(106,247,200,0.2)'); g2.addColorStop(1, 'rgba(106,247,200,0)');
+    // LINE
+    const lc = document.getElementById('lineChart');
+    const ctx = lc.getContext('2d');
+    const g1 = ctx.createLinearGradient(0, 0, 0, 300);
+    g1.addColorStop(0, 'rgba(124,106,247,0.35)');
+    g1.addColorStop(1, 'rgba(124,106,247,0)');
+    const g2 = ctx.createLinearGradient(0, 0, 0, 300);
+    g2.addColorStop(0, 'rgba(106,247,200,0.25)');
+    g2.addColorStop(1, 'rgba(106,247,200,0)');
 
-    new Chart(lineCtx, {
+    new Chart(ctx, {
       type: 'line',
       data: {
         labels: ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'],
         datasets: [
-          { label: 'Выручка (тыс. ₽)', data: [120,145,132,178,210,195,234,267,249,298,310,345],
+          { label: 'Выручка', data: [120,145,132,178,210,195,234,267,249,298,310,345],
             borderColor: '#7c6af7', backgroundColor: g1, borderWidth: 2,
             pointBackgroundColor: '#7c6af7', pointRadius: 3, pointHoverRadius: 6,
             tension: 0.4, fill: true },
-          { label: 'Расходы (тыс. ₽)', data: [90,100,98,115,130,125,148,160,155,170,180,190],
+          { label: 'Расходы', data: [90,100,98,115,130,125,148,160,155,170,180,190],
             borderColor: '#6af7c8', backgroundColor: g2, borderWidth: 2,
             pointBackgroundColor: '#6af7c8', pointRadius: 3, pointHoverRadius: 6,
             tension: 0.4, fill: true }
         ]
       },
       options: {
-        responsive: true, maintainAspectRatio: false,
+        responsive: true,
+        maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: { labels: { color: '#9a9ab8', boxWidth: 8, padding: 10, font: { size: 10 } } },
-          tooltip: { backgroundColor: '#13131a', borderColor: '#2e2e4a', borderWidth: 1, padding: 10,
+          legend: { labels: { color: '#9a9ab8', boxWidth: 8, padding: 10 } },
+          tooltip: { backgroundColor: '#13131a', borderColor: '#2e2e4a', borderWidth: 1,
             titleColor: '#e8e8f0', bodyColor: '#9a9ab8' }
         },
         scales: {
@@ -194,6 +223,7 @@
       }
     });
 
+    // DOUGHNUT
     new Chart(document.getElementById('doughnutChart').getContext('2d'), {
       type: 'doughnut',
       data: {
@@ -203,12 +233,15 @@
           borderWidth: 0, hoverOffset: 6 }]
       },
       options: {
-        responsive: true, maintainAspectRatio: false, cutout: '65%',
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
         plugins: {
-          legend: { position: 'bottom', labels: { color: '#9a9ab8', boxWidth: 8, padding: 8, font: { size: 10 } } },
-          tooltip: { backgroundColor: '#13131a', borderColor: '#2e2e4a', borderWidth: 1, padding: 10,
+          legend: { position: 'bottom',
+            labels: { color: '#9a9ab8', boxWidth: 8, padding: 8 } },
+          tooltip: { backgroundColor: '#13131a', borderColor: '#2e2e4a', borderWidth: 1,
             titleColor: '#e8e8f0', bodyColor: '#9a9ab8',
-            callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}%` } }
+            callbacks: { label: c => ` ${c.label}: ${c.parsed}%` } }
         }
       }
     });
