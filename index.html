@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Аналитика</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --border: #1e1e2e;
+      --accent: #7c6af7;
+      --accent2: #f76a8a;
+      --accent3: #6af7c8;
+      --text: #e8e8f0;
+      --muted: #6b6b8a;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0.6;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .date {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .kpi:nth-child(1) { animation-delay: 0.1s; }
+    .kpi:nth-child(2) { animation-delay: 0.2s; }
+    .kpi:nth-child(3) { animation-delay: 0.3s; }
+
+    .kpi::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      opacity: 0.12;
+      transform: translate(30%, -30%);
+    }
+    .kpi:nth-child(1)::after { background: var(--accent); }
+    .kpi:nth-child(2)::after { background: var(--accent2); }
+    .kpi:nth-child(3)::after { background: var(--accent3); }
+
+    .kpi-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .kpi:nth-child(1) .kpi-value { color: var(--accent); }
+    .kpi:nth-child(2) .kpi-value { color: var(--accent2); }
+    .kpi:nth-child(3) .kpi-value { color: var(--accent3); }
+
+    .kpi-delta {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--accent3);
+      margin-top: 6px;
+    }
+    .kpi-delta.neg { color: var(--accent2); }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.35s; }
+    .card:nth-child(2) { animation-delay: 0.45s; }
+
+    .card-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 20px;
+    }
+
+    canvas { max-width: 100%; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 640px) {
+      .kpi-row { grid-template-columns: 1fr; }
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">ANALYTICS</div>
+    <div class="date" id="dt"></div>
+  </header>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Выручка</div>
+      <div class="kpi-value">₽2.4M</div>
+      <div class="kpi-delta">▲ +18.2% vs прошлый месяц</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Новые пользователи</div>
+      <div class="kpi-value">8 341</div>
+      <div class="kpi-delta neg">▼ −3.1% vs прошлый месяц</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Конверсия</div>
+      <div class="kpi-value">4.7%</div>
+      <div class="kpi-delta">▲ +0.9% vs прошлый месяц</div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="card">
+      <div class="card-title">Динамика выручки · 2024</div>
+      <canvas id="lineChart" height="120"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">Каналы трафика</div>
+      <canvas id="doughnutChart" height="180"></canvas>
+    </div>
+  </div>
+
+  <script>
+    // Date
+    const d = new Date();
+    document.getElementById('dt').textContent = d.toLocaleDateString('ru-RU', {
+      day: '2-digit', month: 'long', year: 'numeric'
+    }).toUpperCase();
+
+    // Chart defaults
+    Chart.defaults.color = '#6b6b8a';
+    Chart.defaults.font.family = "'DM Mono', monospace";
+    Chart.defaults.font.size = 11;
+
+    // LINE CHART
+    const lineCtx = document.getElementById('lineChart').getContext('2d');
+    const gradient = lineCtx.createLinearGradient(0, 0, 0, 260);
+    gradient.addColorStop(0, 'rgba(124,106,247,0.3)');
+    gradient.addColorStop(1, 'rgba(124,106,247,0)');
+
+    const gradient2 = lineCtx.createLinearGradient(0, 0, 0, 260);
+    gradient2.addColorStop(0, 'rgba(106,247,200,0.2)');
+    gradient2.addColorStop(1, 'rgba(106,247,200,0)');
+
+    new Chart(lineCtx, {
+      type: 'line',
+      data: {
+        labels: ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'],
+        datasets: [
+          {
+            label: 'Выручка (тыс. ₽)',
+            data: [120, 145, 132, 178, 210, 195, 234, 267, 249, 298, 310, 345],
+            borderColor: '#7c6af7',
+            backgroundColor: gradient,
+            borderWidth: 2,
+            pointBackgroundColor: '#7c6af7',
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: 'Расходы (тыс. ₽)',
+            data: [90, 100, 98, 115, 130, 125, 148, 160, 155, 170, 180, 190],
+            borderColor: '#6af7c8',
+            backgroundColor: gradient2,
+            borderWidth: 2,
+            pointBackgroundColor: '#6af7c8',
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            tension: 0.4,
+            fill: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            labels: { color: '#9a9ab8', boxWidth: 10, padding: 16 }
+          },
+          tooltip: {
+            backgroundColor: '#13131a',
+            borderColor: '#2e2e4a',
+            borderWidth: 1,
+            padding: 12,
+            titleColor: '#e8e8f0',
+            bodyColor: '#9a9ab8'
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: '#1e1e2e' },
+            ticks: { color: '#6b6b8a' }
+          },
+          y: {
+            grid: { color: '#1e1e2e' },
+            ticks: { color: '#6b6b8a' }
+          }
+        }
+      }
+    });
+
+    // DOUGHNUT CHART
+    const dCtx = document.getElementById('doughnutChart').getContext('2d');
+    new Chart(dCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Органика', 'Контекст', 'SMM', 'Реферал', 'Email'],
+        datasets: [{
+          data: [38, 27, 18, 11, 6],
+          backgroundColor: ['#7c6af7','#f76a8a','#6af7c8','#f7c46a','#6ab4f7'],
+          borderWidth: 0,
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '68%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#9a9ab8',
+              boxWidth: 10,
+              padding: 12,
+              font: { size: 11 }
+            }
+          },
+          tooltip: {
+            backgroundColor: '#13131a',
+            borderColor: '#2e2e4a',
+            borderWidth: 1,
+            padding: 12,
+            titleColor: '#e8e8f0',
+            bodyColor: '#9a9ab8',
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${ctx.parsed}%`
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
