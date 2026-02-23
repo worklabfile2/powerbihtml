@@ -6,33 +6,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
-
+  html, body { width: 100%; height: 100%; overflow: hidden; }
   body {
     font-family: Segoe UI, Arial, sans-serif;
     background: #f7f9fc;
-    padding: 10px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
   }
-
   .wrap {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     flex: 1;
     min-height: 0;
   }
-
-  /* Header */
   .hdr h2 {
     color: #013d7e;
-    font-size: clamp(11px, 1.8vw, 16px);
+    font-size: clamp(13px, 2.2vw, 20px);
     font-weight: 800;
     text-transform: uppercase;
     white-space: nowrap;
@@ -41,46 +32,42 @@
   }
   .hdr p {
     color: #888;
-    font-size: clamp(9px, 1.2vw, 11px);
-    margin-top: 1px;
+    font-size: clamp(10px, 1.4vw, 13px);
+    margin-top: 2px;
   }
-
-  /* Comment */
   .comment-box {
     background: #fff8e1;
     border-left: 3px solid #C69200;
     border-radius: 4px;
-    padding: 5px 10px;
-    font-size: clamp(9px, 1.2vw, 12px);
+    padding: 6px 12px;
+    font-size: clamp(10px, 1.4vw, 13px);
     color: #555;
     display: none;
-    line-height: 1.3;
+    line-height: 1.4;
   }
   .comment-box.visible { display: block; }
   .comment-box strong {
     color: #C69200;
-    font-size: clamp(8px, 1vw, 10px);
+    font-size: clamp(9px, 1.1vw, 11px);
     text-transform: uppercase;
     letter-spacing: .08em;
     display: block;
-    margin-bottom: 1px;
+    margin-bottom: 2px;
   }
-
-  /* Stats */
   .stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    gap: 8px;
     flex-shrink: 0;
   }
   .sbox {
     background: #fff;
     border: 1px solid #e4e8f0;
-    border-radius: 6px;
-    padding: 5px 10px;
+    border-radius: 8px;
+    padding: 8px 14px;
   }
   .slbl {
-    font-size: clamp(8px, 1vw, 10px);
+    font-size: clamp(9px, 1.2vw, 12px);
     font-weight: 700;
     text-transform: uppercase;
     color: #aaa;
@@ -88,35 +75,35 @@
     white-space: nowrap;
   }
   .sval {
-    font-size: clamp(13px, 2.2vw, 20px);
+    font-size: clamp(16px, 2.8vw, 26px);
     font-weight: 900;
-    line-height: 1.1;
+    line-height: 1.15;
   }
-  .z3 { color: #2E7D32; }
-  .z2 { color: #C69200; }
-  .z1 { color: #C00000; }
 
-  /* Chart */
+  /* 1=красный, 2=жёлтый, 3=зелёный */
+  .z1 { color: #C00000; }
+  .z2 { color: #C69200; }
+  .z3 { color: #2E7D32; }
+
   .chart-wrap {
     background: #fff;
     border: 1px solid #e4e8f0;
-    border-radius: 8px;
-    padding: 8px;
+    border-radius: 10px;
+    padding: 10px;
     flex: 1;
     min-height: 0;
     position: relative;
   }
   .chart-wrap canvas {
     position: absolute;
-    top: 8px; left: 8px;
-    right: 8px; bottom: 8px;
-    width: calc(100% - 16px) !important;
-    height: calc(100% - 16px) !important;
+    top: 10px; left: 10px;
+    right: 10px; bottom: 10px;
+    width: calc(100% - 20px) !important;
+    height: calc(100% - 20px) !important;
   }
-
   .empty {
     color: #bbb;
-    font-size: 14px;
+    font-size: 15px;
     text-align: center;
     margin-top: 40px;
   }
@@ -124,7 +111,6 @@
 </head>
 <body>
 <div id="app" style="display:flex;flex-direction:column;flex:1;min-height:0;"></div>
-
 <script>
 (function(){
   var params  = new URLSearchParams(window.location.search);
@@ -149,14 +135,28 @@
   var labs  = RAW.map(function(d){ return d.p; });
   var zones = RAW.map(function(d){ return d.z; });
   var n     = vals.length;
-  var avg   = vals.reduce(function(a,b){ return a+b; },0)/n;
-  var first = vals[0], last = vals[n-1];
+  var avg   = vals.reduce(function(a,b){ return a+b; },0) / n;
 
-  function fmtPct(v){ return (v*100).toFixed(1).replace('.',',')+'\u0025'; }
+  function fmtPct(v){ return (v*100).toFixed(1).replace('.',',') + '%'; }
 
-  var COLORS = { 1:'rgba(46,125,50,0.85)', 2:'rgba(198,146,0,0.85)', 3:'rgba(192,0,0,0.85)' };
-  var BORDER = { 1:'#2E7D32', 2:'#C69200', 3:'#C00000' };
-  var ZCLS   = { 1:'z1', 2:'z2', 3:'z3' };
+  // 1=красный, 2=жёлтый, 3=зелёный
+  var COLORS = {
+    1: 'rgba(192,0,0,0.82)',
+    2: 'rgba(198,146,0,0.82)',
+    3: 'rgba(46,125,50,0.82)'
+  };
+  var BORDER = {
+    1: '#C00000',
+    2: '#C69200',
+    3: '#2E7D32'
+  };
+  var ZCLS = {
+    1: 'z1',
+    2: 'z2',
+    3: 'z3'
+  };
+
+  function avgZone(v){ return v >= 0.10 ? 3 : v > 0 ? 2 : 1; }
 
   var commentHTML = comment
     ? "<div class='comment-box visible'><strong>\u041a\u043e\u043c\u043c\u0435\u043d\u0442\u0430\u0440\u0438\u0439</strong>" + comment + "</div>"
@@ -167,16 +167,15 @@
     "<div class='hdr'><h2>" + name + "</h2><p>\u0414\u0438\u043d\u0430\u043c\u0438\u043a\u0430 \u0440\u0435\u043d\u0442\u0430\u0431\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u0438 &bull; \u0412\u0441\u0435 \u043f\u0435\u0440\u0438\u043e\u0434\u044b</p></div>" +
     commentHTML +
     "<div class='stats'>" +
-      "<div class='sbox'><div class='slbl'>\u041f\u0435\u0440\u0432\u044b\u0439</div><div class='sval " + ZCLS[zones[0]] + "'>" + fmtPct(first) + "</div></div>" +
-      "<div class='sbox'><div class='slbl'>\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439</div><div class='sval " + ZCLS[zones[n-1]] + "'>" + fmtPct(last) + "</div></div>" +
-      "<div class='sbox'><div class='slbl'>\u0421\u0440\u0435\u0434\u043d\u0435\u0435</div><div class='sval " + ZCLS[avg>=0.10?1:avg>0?2:3] + "'>" + fmtPct(avg) + "</div></div>" +
+      "<div class='sbox'><div class='slbl'>\u041f\u0435\u0440\u0432\u044b\u0439 \u043f\u0435\u0440\u0438\u043e\u0434</div><div class='sval " + ZCLS[zones[0]] + "'>" + fmtPct(vals[0]) + "</div></div>" +
+      "<div class='sbox'><div class='slbl'>\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u043f\u0435\u0440\u0438\u043e\u0434</div><div class='sval " + ZCLS[zones[n-1]] + "'>" + fmtPct(vals[n-1]) + "</div></div>" +
+      "<div class='sbox'><div class='slbl'>\u0421\u0440\u0435\u0434\u043d\u0435\u0435</div><div class='sval " + ZCLS[avgZone(avg)] + "'>" + fmtPct(avg) + "</div></div>" +
     "</div>" +
     "<div class='chart-wrap'><canvas id='ch'></canvas></div>";
 
-  // Динамический размер шрифта меток
   function getLabelFont(){
     var w = document.getElementById('ch').offsetWidth || 400;
-    var size = Math.max(7, Math.min(11, Math.floor(w / (n * 3.5))));
+    var size = Math.max(8, Math.min(13, Math.floor(w / (n * 3.2))));
     return 'bold ' + size + 'px Segoe UI';
   }
 
@@ -184,15 +183,13 @@
     id: 'dataLabels',
     afterDatasetsDraw: function(chart){
       var ctx2 = chart.ctx;
-      chart.data.datasets.forEach(function(ds, di){
-        chart.getDatasetMeta(di).data.forEach(function(bar, i){
-          ctx2.save();
-          ctx2.font = getLabelFont();
-          ctx2.fillStyle = BORDER[zones[i]];
-          ctx2.textAlign = 'center';
-          ctx2.fillText(fmtPct(vals[i]), bar.x, bar.y - 4);
-          ctx2.restore();
-        });
+      chart.getDatasetMeta(0).data.forEach(function(bar, i){
+        ctx2.save();
+        ctx2.font = getLabelFont();
+        ctx2.fillStyle = BORDER[zones[i]];
+        ctx2.textAlign = 'center';
+        ctx2.fillText(fmtPct(vals[i]), bar.x, bar.y - 5);
+        ctx2.restore();
       });
     }
   };
@@ -207,14 +204,14 @@
       ctx2.save();
       ctx2.beginPath();
       ctx2.moveTo(xl, y); ctx2.lineTo(xr, y);
-      ctx2.setLineDash([5, 4]);
+      ctx2.setLineDash([6, 4]);
       ctx2.strokeStyle = 'rgba(1,61,126,0.35)';
       ctx2.lineWidth = 1.5;
       ctx2.stroke();
-      ctx2.font = 'bold 9px Segoe UI';
+      ctx2.font = 'bold 10px Segoe UI';
       ctx2.fillStyle = '#013d7e';
       ctx2.textAlign = 'right';
-      ctx2.fillText('avg ' + fmtPct(avg), xr, y - 3);
+      ctx2.fillText('avg ' + fmtPct(avg), xr, y - 4);
       ctx2.restore();
     }
   };
@@ -229,14 +226,14 @@
         backgroundColor: zones.map(function(z){ return COLORS[z]; }),
         borderColor:     zones.map(function(z){ return BORDER[z]; }),
         borderWidth: 1.5,
-        borderRadius: 3,
+        borderRadius: 4,
         borderSkipped: false
       }]
     },
     options:{
       responsive: true,
       maintainAspectRatio: false,
-      layout: { padding: { top: 16, left: 2, right: 2, bottom: 2 } },
+      layout: { padding: { top: 20, left: 2, right: 2, bottom: 2 } },
       animation: { duration: 400, easing: 'easeOutQuart' },
       plugins:{
         legend: { display: false },
@@ -245,33 +242,31 @@
             label: function(item){ return ' ' + fmtPct(vals[item.dataIndex]); }
           },
           backgroundColor: '#013d7e',
-          titleFont: { weight:'bold', size:11 },
-          bodyFont:  { size:11 },
-          padding: 8,
-          cornerRadius: 5
+          titleFont: { weight:'bold', size:12 },
+          bodyFont:  { size:12 },
+          padding: 10,
+          cornerRadius: 6
         }
       },
       scales:{
         x:{
           grid: { display: false },
           ticks:{
-            font: { size: 9 },
+            font: { size: 10 },
             color: '#999',
             maxRotation: 45,
             autoSkip: true,
-            maxTicksLimit: 18
+            maxTicksLimit: 20
           }
         },
-        y:{ display: false }
+        y: { display: false }
       }
     }
   });
 
-  // Перерисовка при изменении размера окна
   window.addEventListener('resize', function(){
     Chart.instances.forEach(function(c){ c.resize(); });
   });
-
 })();
 </script>
 </body>
