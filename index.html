@@ -6,201 +6,160 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: Segoe UI, Arial, sans-serif;
-    background: #f7f9fc;
-    padding: 16px;
-    height: 100vh;
-    overflow: hidden;
+  body { font-family: Segoe UI, Arial, sans-serif; background: #f7f9fc; padding: 14px; height: 100vh; overflow: hidden; }
+  .wrap { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+  .hdr h2 { color: #013d7e; font-size: 16px; font-weight: 800; text-transform: uppercase; }
+  .hdr p  { color: #888; font-size: 11px; margin-top: 2px; }
+  .comment-box {
+    background: #fff8e1;
+    border-left: 3px solid #C69200;
+    border-radius: 4px;
+    padding: 7px 12px;
+    font-size: 12px;
+    color: #555;
+    display: none;
   }
-  .wrap { display: flex; flex-direction: column; gap: 12px; height: 100%; }
-
-  .hdr { display: flex; justify-content: space-between; align-items: flex-end; }
-  .hdr-left h2 {
-    color: #013d7e;
-    font-size: 17px;
-    font-weight: 800;
-    text-transform: uppercase;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 480px;
-  }
-  .hdr-left p { color: #888; font-size: 11px; margin-top: 2px; }
-
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .sbox {
-    background: #fff;
-    border: 1px solid #e4e8f0;
-    border-radius: 8px;
-    padding: 8px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .slbl { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #aaa; letter-spacing: .08em; }
-  .sval { font-size: 18px; font-weight: 900; }
-  .pos { color: #2E7D32; } .neg { color: #C00000; } .warn { color: #C69200; }
-
-  .chart-wrap {
-    background: #fff;
-    border: 1px solid #e4e8f0;
-    border-radius: 10px;
-    padding: 14px;
-    flex: 1;
-    min-height: 0;
-    position: relative;
-  }
-  canvas { width: 100% !important; height: 100% !important; }
-
-  .empty { color: #bbb; font-size: 15px; padding: 30px; text-align: center; margin-top: 60px; }
+  .comment-box.visible { display: block; }
+  .comment-box strong { color: #C69200; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; display: block; margin-bottom: 2px; }
+  .stats  { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .sbox   { background:#fff; border:1px solid #e4e8f0; border-radius:8px; padding:8px 12px; }
+  .slbl   { font-size:9px; font-weight:700; text-transform:uppercase; color:#aaa; letter-spacing:.08em; }
+  .sval   { font-size:18px; font-weight:900; }
+  .z1 { color: #2E7D32; } .z2 { color: #C69200; } .z3 { color: #C00000; }
+  .chart-wrap { background:#fff; border:1px solid #e4e8f0; border-radius:10px; padding:12px; flex:1; min-height:0; }
+  canvas { width:100% !important; height:100% !important; }
+  .empty { color:#bbb; font-size:15px; padding:30px; text-align:center; margin-top:60px; }
 </style>
 </head>
 <body>
 <div id="app"></div>
-
 <script>
-(function () {
-  var params = new URLSearchParams(window.location.search);
+(function(){
+  var params  = new URLSearchParams(window.location.search);
   var name    = params.get('name');
   var dataRaw = params.get('data');
+  var comment = params.get('comment') || '';
   var app     = document.getElementById('app');
 
-  if (!name || !dataRaw) {
-    app.innerHTML = "<p class='empty'>← Выбери строку в таблице Power BI</p>";
-    return;
-  }
+  if(!name || !dataRaw){ app.innerHTML="<p class='empty'>\u2190 \u0412\u044b\u0431\u0435\u0440\u0438 \u0441\u0442\u0440\u043e\u043a\u0443 \u0432 \u0442\u0430\u0431\u043b\u0438\u0446\u0435 Power BI</p>"; return; }
 
-  // Парсим data: "Янв-24:0.1200|Фев-24:0.2700|..."
-  var RAW = dataRaw.split('|').map(function (s) {
-    var parts = s.split(':');
-    return { p: parts[0], r: parseFloat(parts[1]) || 0 };
-  }).filter(function (d) { return d.p; });
+  // Format: "Period:rent:zone|..."
+  var RAW = dataRaw.split('|').map(function(s){
+    var p = s.split(':');
+    return { p: p[0], r: parseFloat(p[1])||0, z: parseInt(p[2])||1 };
+  }).filter(function(d){ return d.p; });
 
-  if (!RAW.length) {
-    app.innerHTML = "<p class='empty'>Нет данных</p>";
-    return;
-  }
+  if(!RAW.length){ app.innerHTML="<p class='empty'>\u041d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445</p>"; return; }
 
-  var vals  = RAW.map(function (d) { return d.r; });
-  var labs  = RAW.map(function (d) { return d.p; });
+  var vals  = RAW.map(function(d){ return d.r; });
+  var labs  = RAW.map(function(d){ return d.p; });
+  var zones = RAW.map(function(d){ return d.z; });
   var n     = vals.length;
-  var avg   = vals.reduce(function (a, b) { return a + b; }, 0) / n;
-  var first = vals[0];
-  var last  = vals[n - 1];
+  var avg   = vals.reduce(function(a,b){ return a+b; },0)/n;
+  var first = vals[0], last = vals[n-1];
 
-  function fmtPct(v) { return (v * 100).toFixed(1).replace('.', ',') + '%'; }
-  function cls(v)    { return v >= 0.10 ? 'pos' : v > 0 ? 'warn' : 'neg'; }
-  function barColor(v) {
-    if (v >= 0.10) return 'rgba(46,125,50,0.85)';
-    if (v > 0)     return 'rgba(198,146,0,0.85)';
-    return 'rgba(192,0,0,0.85)';
-  }
-  function barBorder(v) {
-    if (v >= 0.10) return '#2E7D32';
-    if (v > 0)     return '#C69200';
-    return '#C00000';
-  }
+  function fmtPct(v){ return (v*100).toFixed(1).replace('.',',')+'\u0025'; }
+
+  var COLORS = { 1:'rgba(46,125,50,0.85)', 2:'rgba(198,146,0,0.85)', 3:'rgba(192,0,0,0.85)' };
+  var BORDER = { 1:'#2E7D32', 2:'#C69200', 3:'#C00000' };
+  var ZCLS   = { 1:'z1', 2:'z2', 3:'z3' };
+
+  var lastZ  = zones[n-1];
+  var firstZ = zones[0];
+  var avgZ   = avg>=0.10?1:avg>0?2:3;
+
+  var commentHTML = comment
+    ? "<div class='comment-box visible'><strong>\u041a\u043e\u043c\u043c\u0435\u043d\u0442\u0430\u0440\u0438\u0439</strong>" + comment + "</div>"
+    : "<div class='comment-box'></div>";
 
   app.innerHTML =
-    "<div class='wrap'>" +
-      "<div class='hdr'>" +
-        "<div class='hdr-left'>" +
-          "<h2>" + name + "</h2>" +
-          "<p>Динамика рентабельности • Все периоды</p>" +
-        "</div>" +
-      "</div>" +
-      "<div class='stats'>" +
-        "<div class='sbox'><div class='slbl'>Первый период</div><div class='sval " + cls(first) + "'>" + fmtPct(first) + "</div></div>" +
-        "<div class='sbox'><div class='slbl'>Последний период</div><div class='sval " + cls(last) + "'>" + fmtPct(last) + "</div></div>" +
-        "<div class='sbox'><div class='slbl'>Среднее</div><div class='sval " + cls(avg) + "'>" + fmtPct(avg) + "</div></div>" +
-      "</div>" +
-      "<div class='chart-wrap'><canvas id='myChart'></canvas></div>" +
+    "<div class='wrap'>"+
+      "<div class='hdr'><h2>"+name+"</h2><p>\u0414\u0438\u043d\u0430\u043c\u0438\u043a\u0430 \u0440\u0435\u043d\u0442\u0430\u0431\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u0438 &bull; \u0412\u0441\u0435 \u043f\u0435\u0440\u0438\u043e\u0434\u044b</p></div>"+
+      commentHTML +
+      "<div class='stats'>"+
+        "<div class='sbox'><div class='slbl'>\u041f\u0435\u0440\u0432\u044b\u0439 \u043f\u0435\u0440\u0438\u043e\u0434</div><div class='sval "+ZCLS[firstZ]+"'>"+fmtPct(first)+"</div></div>"+
+        "<div class='sbox'><div class='slbl'>\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u043f\u0435\u0440\u0438\u043e\u0434</div><div class='sval "+ZCLS[lastZ]+"'>"+fmtPct(last)+"</div></div>"+
+        "<div class='sbox'><div class='slbl'>\u0421\u0440\u0435\u0434\u043d\u0435\u0435</div><div class='sval "+ZCLS[avgZ]+"'>"+fmtPct(avg)+"</div></div>"+
+      "</div>"+
+      "<div class='chart-wrap'><canvas id='ch'></canvas></div>"+
     "</div>";
 
-  var ctx = document.getElementById('myChart').getContext('2d');
+  var dataLabelPlugin = {
+    id: 'dataLabels',
+    afterDatasetsDraw: function(chart){
+      var ctx2 = chart.ctx;
+      chart.data.datasets.forEach(function(ds, di){
+        chart.getDatasetMeta(di).data.forEach(function(bar, i){
+          ctx2.save();
+          ctx2.font = 'bold 10px Segoe UI';
+          ctx2.fillStyle = BORDER[zones[i]];
+          ctx2.textAlign = 'center';
+          ctx2.fillText(fmtPct(vals[i]), bar.x, bar.y - 5);
+          ctx2.restore();
+        });
+      });
+    }
+  };
 
-  // Avg line plugin
-  var avgLinePlugin = {
+  var avgPlugin = {
     id: 'avgLine',
-    afterDraw: function(chart) {
-      var yAxis = chart.scales.y;
-      var xAxis = chart.scales.x;
-      var avgPx = yAxis.getPixelForValue(avg);
-      var ctx2  = chart.ctx;
+    afterDraw: function(chart){
+      var y    = chart.scales.y.getPixelForValue(avg*100);
+      var ctx2 = chart.ctx;
+      var xl   = chart.scales.x.left;
+      var xr   = chart.scales.x.right;
       ctx2.save();
       ctx2.beginPath();
-      ctx2.moveTo(xAxis.left, avgPx);
-      ctx2.lineTo(xAxis.right, avgPx);
-      ctx2.setLineDash([6, 4]);
-      ctx2.strokeStyle = 'rgba(1,61,126,0.5)';
-      ctx2.lineWidth   = 1.5;
+      ctx2.moveTo(xl, y); ctx2.lineTo(xr, y);
+      ctx2.setLineDash([6,4]);
+      ctx2.strokeStyle = 'rgba(1,61,126,0.4)';
+      ctx2.lineWidth = 1.5;
       ctx2.stroke();
-      ctx2.restore();
-      // Label
-      ctx2.save();
       ctx2.font = 'bold 10px Segoe UI';
       ctx2.fillStyle = '#013d7e';
-      ctx2.fillText('avg ' + fmtPct(avg), xAxis.right - 60, avgPx - 5);
+      ctx2.textAlign = 'right';
+      ctx2.fillText('avg '+fmtPct(avg), xr, y - 4);
       ctx2.restore();
     }
   };
 
-  new Chart(ctx, {
+  new Chart(document.getElementById('ch').getContext('2d'), {
     type: 'bar',
-    plugins: [avgLinePlugin],
+    plugins: [dataLabelPlugin, avgPlugin],
     data: {
       labels: labs,
-      datasets: [{
-        label: 'Рентабельность',
-        data: vals.map(function(v){ return parseFloat((v * 100).toFixed(2)); }),
-        backgroundColor: vals.map(barColor),
-        borderColor:     vals.map(barBorder),
+      datasets:[{
+        data: vals.map(function(v){ return parseFloat((v*100).toFixed(2)); }),
+        backgroundColor: zones.map(function(z){ return COLORS[z]; }),
+        borderColor:     zones.map(function(z){ return BORDER[z]; }),
         borderWidth: 1.5,
         borderRadius: 4,
-        borderSkipped: false,
+        borderSkipped: false
       }]
     },
-    options: {
+    options:{
       responsive: true,
       maintainAspectRatio: false,
-      animation: { duration: 600, easing: 'easeOutQuart' },
-      plugins: {
+      layout: { padding: { top: 20 } },
+      animation: { duration: 500, easing: 'easeOutQuart' },
+      plugins:{
         legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: function(ctx) {
-              return ' ' + ctx.parsed.y.toFixed(1).replace('.', ',') + '%';
+        tooltip:{
+          callbacks:{
+            label: function(item){
+              return ' ' + fmtPct(vals[item.dataIndex]);
             }
           },
           backgroundColor: '#013d7e',
-          titleFont: { weight: 'bold', size: 12 },
-          bodyFont: { size: 13, weight: 'bold' },
+          titleFont: { weight:'bold', size:12 },
+          bodyFont:  { size:12 },
           padding: 10,
           cornerRadius: 6
         }
       },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: {
-            font: { size: 10 },
-            color: '#999',
-            maxRotation: 45
-          }
-        },
-        y: {
-          grid: {
-            color: 'rgba(0,0,0,0.06)',
-            drawTicks: false
-          },
-          border: { dash: [4, 4] },
-          ticks: {
-            font: { size: 10 },
-            color: '#999',
-            callback: function(v) { return v + '%'; }
-          }
-        }
+      scales:{
+        x:{ grid:{ display:false }, ticks:{ font:{ size:10 }, color:'#999', maxRotation:45 } },
+        y:{ display: false }
       }
     }
   });
