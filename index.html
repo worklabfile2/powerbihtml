@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Аналитика</title>
+  <title>Аналитика продаж</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
   <style>
@@ -13,235 +13,213 @@
       --accent: #7c6af7; --accent2: #f76a8a; --accent3: #6af7c8;
       --text: #e8e8f0; --muted: #6b6b8a;
     }
-
-    html {
-      width: 100%;
-      height: 100%;
-    }
-
+    html { width: 100%; height: 100%; }
     body {
-      width: 100%;
-      height: 100vh;
-      background: var(--bg);
-      color: var(--text);
+      width: 100%; height: 100vh;
+      background: var(--bg); color: var(--text);
       font-family: 'Syne', sans-serif;
       display: grid;
       grid-template-rows: auto auto 1fr;
-      grid-template-columns: 1fr;
       gap: 10px;
       padding: 14px;
     }
-
-    /* ── HEADER ── */
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    header { display: flex; justify-content: space-between; align-items: center; }
     .logo {
-      font-size: clamp(0.85rem, 2vw, 1.3rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
+      font-size: clamp(0.85rem, 2vw, 1.3rem); font-weight: 800; letter-spacing: -0.03em;
       background: linear-gradient(135deg, var(--accent), var(--accent3));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .date {
-      font-family: 'DM Mono', monospace;
-      font-size: clamp(0.55rem, 1vw, 0.7rem);
-      color: var(--muted);
-    }
+    .date { font-family: 'DM Mono', monospace; font-size: clamp(0.55rem, 1vw, 0.7rem); color: var(--muted); }
 
-    /* ── KPI ROW ── */
-    .kpi-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
+    .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .kpi {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: clamp(8px, 1.5vh, 16px) clamp(10px, 1.5vw, 18px);
-      position: relative;
-      overflow: hidden;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: clamp(8px,1.5vh,16px) clamp(10px,1.5vw,18px);
+      position: relative; overflow: hidden;
     }
     .kpi::after {
-      content: '';
-      position: absolute; top: 0; right: 0;
-      width: 55px; height: 55px;
-      border-radius: 50%; opacity: 0.15;
-      transform: translate(30%, -30%);
+      content: ''; position: absolute; top: 0; right: 0;
+      width: 55px; height: 55px; border-radius: 50%; opacity: 0.15;
+      transform: translate(30%,-30%);
     }
     .kpi:nth-child(1)::after { background: var(--accent); }
     .kpi:nth-child(2)::after { background: var(--accent2); }
     .kpi:nth-child(3)::after { background: var(--accent3); }
-    .kpi-label {
-      font-family: 'DM Mono', monospace;
-      font-size: clamp(0.5rem, 0.9vw, 0.65rem);
-      color: var(--muted); text-transform: uppercase;
-      letter-spacing: 0.1em; margin-bottom: 4px;
-    }
-    .kpi-value {
-      font-size: clamp(1.1rem, 2.5vw, 1.9rem);
-      font-weight: 800; letter-spacing: -0.04em; line-height: 1;
-    }
-    .kpi:nth-child(1) .kpi-value { color: var(--accent); }
-    .kpi:nth-child(2) .kpi-value { color: var(--accent2); }
-    .kpi:nth-child(3) .kpi-value { color: var(--accent3); }
-    .kpi-delta {
-      font-family: 'DM Mono', monospace;
-      font-size: clamp(0.5rem, 0.75vw, 0.65rem);
-      color: var(--accent3); margin-top: 3px;
-    }
-    .kpi-delta.neg { color: var(--accent2); }
+    .kpi-label { font-family:'DM Mono',monospace; font-size:clamp(0.5rem,0.9vw,0.65rem); color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px; }
+    .kpi-value { font-size:clamp(1.1rem,2.5vw,1.9rem); font-weight:800; letter-spacing:-0.04em; line-height:1; }
+    .kpi:nth-child(1) .kpi-value { color:var(--accent); }
+    .kpi:nth-child(2) .kpi-value { color:var(--accent2); }
+    .kpi:nth-child(3) .kpi-value { color:var(--accent3); }
+    .kpi-delta { font-family:'DM Mono',monospace; font-size:clamp(0.5rem,0.75vw,0.65rem); color:var(--accent3); margin-top:3px; }
+    .kpi-delta.neg { color:var(--accent2); }
 
-    /* ── CHARTS ── */
-    .charts-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 8px;
-      min-height: 0; /* critical for grid children */
-    }
+    .charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:8px; min-height:0; }
     .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: clamp(10px, 1.5vw, 18px);
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:12px; padding:clamp(10px,1.5vw,18px);
+      display:flex; flex-direction:column; min-height:0;
     }
-    .card-title {
-      font-family: 'DM Mono', monospace;
-      font-size: clamp(0.5rem, 0.85vw, 0.65rem);
-      color: var(--muted); text-transform: uppercase;
-      letter-spacing: 0.12em; margin-bottom: 8px;
-      flex-shrink: 0;
-    }
-    .chart-wrap {
-      position: relative;
-      flex: 1;
-      min-height: 0;
-    }
-    canvas {
-      position: absolute !important;
-      top: 0; left: 0;
-      width: 100% !important;
-      height: 100% !important;
-    }
+    .card-title { font-family:'DM Mono',monospace; font-size:clamp(0.5rem,0.85vw,0.65rem); color:var(--muted); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:8px; flex-shrink:0; }
+    .chart-wrap { position:relative; flex:1; min-height:0; }
+    canvas { position:absolute !important; top:0; left:0; width:100% !important; height:100% !important; }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="logo">ANALYTICS</div>
+    <div class="logo">SALES DASHBOARD</div>
     <div class="date" id="dt"></div>
   </header>
 
   <div class="kpi-row">
     <div class="kpi">
-      <div class="kpi-label">Выручка</div>
-      <div class="kpi-value">₽2.4M</div>
-      <div class="kpi-delta">▲ +18.2% vs прошлый мес.</div>
+      <div class="kpi-label">Выручка YTD</div>
+      <div class="kpi-value" id="kpi1">—</div>
+      <div class="kpi-delta" id="kpi1d"></div>
     </div>
     <div class="kpi">
-      <div class="kpi-label">Новые пользователи</div>
-      <div class="kpi-value">8 341</div>
-      <div class="kpi-delta neg">▼ −3.1% vs прошлый мес.</div>
+      <div class="kpi-label">Заказы YTD</div>
+      <div class="kpi-value" id="kpi2">—</div>
+      <div class="kpi-delta neg" id="kpi2d"></div>
     </div>
     <div class="kpi">
-      <div class="kpi-label">Конверсия</div>
-      <div class="kpi-value">4.7%</div>
-      <div class="kpi-delta">▲ +0.9% vs прошлый мес.</div>
+      <div class="kpi-label">Средний чек</div>
+      <div class="kpi-value" id="kpi3">—</div>
+      <div class="kpi-delta" id="kpi3d"></div>
     </div>
   </div>
 
   <div class="charts-grid">
     <div class="card">
-      <div class="card-title">Динамика выручки · 2024</div>
-      <div class="chart-wrap">
-        <canvas id="lineChart"></canvas>
-      </div>
+      <div class="card-title">Выручка и заказы по месяцам</div>
+      <div class="chart-wrap"><canvas id="comboChart"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-title">Каналы трафика</div>
-      <div class="chart-wrap">
-        <canvas id="doughnutChart"></canvas>
-      </div>
+      <div class="card-title">Доля по категориям</div>
+      <div class="chart-wrap"><canvas id="doughnutChart"></canvas></div>
     </div>
   </div>
 
   <script>
-    // Date
+    // ── Читаем URL-параметры ────────────────────────────────────────────
+    const params = new URLSearchParams(window.location.search);
+
+    const defaultLabels  = 'Янв,Фев,Мар,Апр,Май,Июн,Июл,Авг,Сен,Окт,Ноя,Дек';
+    const defaultRevenue = '1850,2100,1950,2400,2800,2650,3100,3400,3150,3700,3900,4200';
+    const defaultOrders  = '310,355,330,400,460,440,510,560,520,610,640,680';
+    const defaultCats    = 'Электроника,Одежда,Продукты,Спорт,Другое';
+    const defaultCatVals = '34,26,20,13,7';
+
+    const labels   = (params.get('labels')   || defaultLabels).split(',');
+    const revenue  = (params.get('revenue')  || defaultRevenue).split(',').map(Number);
+    const orders   = (params.get('orders')   || defaultOrders).split(',').map(Number);
+    const catNames = (params.get('cats')     || defaultCats).split(',');
+    const catVals  = (params.get('catvals')  || defaultCatVals).split(',').map(Number);
+
+    // ── KPI ────────────────────────────────────────────────────────────
     document.getElementById('dt').textContent = new Date().toLocaleDateString('ru-RU', {
-      day: '2-digit', month: 'long', year: 'numeric'
+      day:'2-digit', month:'long', year:'numeric'
     }).toUpperCase();
 
+    const totalRev = revenue.reduce((a,b)=>a+b,0);
+    const totalOrd = orders.reduce((a,b)=>a+b,0);
+    const avgCheck = Math.round(totalRev / totalOrd * 1000);
+
+    document.getElementById('kpi1').textContent = '₽' + (totalRev/1000).toFixed(1) + 'M';
+    document.getElementById('kpi1d').textContent = '▲ +' + ((revenue[revenue.length-1]/revenue[0]-1)*100).toFixed(1) + '% янв→дек';
+    document.getElementById('kpi2').textContent = totalOrd.toLocaleString('ru-RU');
+    document.getElementById('kpi2d').textContent = '▲ +' + ((orders[orders.length-1]/orders[0]-1)*100).toFixed(1) + '% янв→дек';
+    document.getElementById('kpi3').textContent = '₽' + avgCheck.toLocaleString('ru-RU');
+    document.getElementById('kpi3d').textContent = '▲ динамика стабильна';
+
+    // ── Chart defaults ─────────────────────────────────────────────────
     Chart.defaults.color = '#6b6b8a';
     Chart.defaults.font.family = "'DM Mono', monospace";
     Chart.defaults.font.size = 10;
 
-    // LINE
-    const lc = document.getElementById('lineChart');
-    const ctx = lc.getContext('2d');
-    const g1 = ctx.createLinearGradient(0, 0, 0, 300);
-    g1.addColorStop(0, 'rgba(124,106,247,0.35)');
-    g1.addColorStop(1, 'rgba(124,106,247,0)');
-    const g2 = ctx.createLinearGradient(0, 0, 0, 300);
-    g2.addColorStop(0, 'rgba(106,247,200,0.25)');
-    g2.addColorStop(1, 'rgba(106,247,200,0)');
+    // ── COMBO CHART (bar + line) ────────────────────────────────────────
+    const cc = document.getElementById('comboChart').getContext('2d');
+    const gBar = cc.createLinearGradient(0,0,0,300);
+    gBar.addColorStop(0,'rgba(124,106,247,0.8)');
+    gBar.addColorStop(1,'rgba(124,106,247,0.2)');
+    const gLine = cc.createLinearGradient(0,0,0,300);
+    gLine.addColorStop(0,'rgba(106,247,200,0.3)');
+    gLine.addColorStop(1,'rgba(106,247,200,0)');
 
-    new Chart(ctx, {
-      type: 'line',
+    new Chart(cc, {
       data: {
-        labels: ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'],
+        labels,
         datasets: [
-          { label: 'Выручка', data: [120,145,132,178,210,195,234,267,249,298,310,345],
-            borderColor: '#7c6af7', backgroundColor: g1, borderWidth: 2,
-            pointBackgroundColor: '#7c6af7', pointRadius: 3, pointHoverRadius: 6,
-            tension: 0.4, fill: true },
-          { label: 'Расходы', data: [90,100,98,115,130,125,148,160,155,170,180,190],
-            borderColor: '#6af7c8', backgroundColor: g2, borderWidth: 2,
-            pointBackgroundColor: '#6af7c8', pointRadius: 3, pointHoverRadius: 6,
-            tension: 0.4, fill: true }
+          {
+            type: 'bar',
+            label: 'Выручка (тыс. ₽)',
+            data: revenue,
+            backgroundColor: gBar,
+            borderRadius: 6,
+            borderSkipped: false,
+            yAxisID: 'y',
+            order: 2
+          },
+          {
+            type: 'line',
+            label: 'Заказы',
+            data: orders,
+            borderColor: '#6af7c8',
+            backgroundColor: gLine,
+            borderWidth: 2,
+            pointBackgroundColor: '#6af7c8',
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            tension: 0.4,
+            fill: true,
+            yAxisID: 'y2',
+            order: 1
+          }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
+        interaction: { mode:'index', intersect:false },
         plugins: {
-          legend: { labels: { color: '#9a9ab8', boxWidth: 8, padding: 10 } },
-          tooltip: { backgroundColor: '#13131a', borderColor: '#2e2e4a', borderWidth: 1,
-            titleColor: '#e8e8f0', bodyColor: '#9a9ab8' }
+          legend: { labels:{ color:'#9a9ab8', boxWidth:8, padding:10 } },
+          tooltip: { backgroundColor:'#13131a', borderColor:'#2e2e4a', borderWidth:1,
+            titleColor:'#e8e8f0', bodyColor:'#9a9ab8' }
         },
         scales: {
-          x: { grid: { color: '#1e1e2e' }, ticks: { color: '#6b6b8a', maxRotation: 0 } },
-          y: { grid: { color: '#1e1e2e' }, ticks: { color: '#6b6b8a' } }
+          x: { grid:{ color:'#1e1e2e' }, ticks:{ color:'#6b6b8a', maxRotation:0 } },
+          y: {
+            position:'left',
+            grid:{ color:'#1e1e2e' },
+            ticks:{ color:'#7c6af7' },
+            title:{ display:true, text:'тыс. ₽', color:'#7c6af7', font:{size:9} }
+          },
+          y2: {
+            position:'right',
+            grid:{ drawOnChartArea:false },
+            ticks:{ color:'#6af7c8' },
+            title:{ display:true, text:'заказы', color:'#6af7c8', font:{size:9} }
+          }
         }
       }
     });
 
-    // DOUGHNUT
+    // ── DOUGHNUT ───────────────────────────────────────────────────────
     new Chart(document.getElementById('doughnutChart').getContext('2d'), {
       type: 'doughnut',
       data: {
-        labels: ['Органика','Контекст','SMM','Реферал','Email'],
-        datasets: [{ data: [38,27,18,11,6],
-          backgroundColor: ['#7c6af7','#f76a8a','#6af7c8','#f7c46a','#6ab4f7'],
-          borderWidth: 0, hoverOffset: 6 }]
+        labels: catNames,
+        datasets: [{ data: catVals,
+          backgroundColor:['#7c6af7','#f76a8a','#6af7c8','#f7c46a','#6ab4f7'],
+          borderWidth:0, hoverOffset:6 }]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '65%',
+        responsive:true, maintainAspectRatio:false, cutout:'65%',
         plugins: {
-          legend: { position: 'bottom',
-            labels: { color: '#9a9ab8', boxWidth: 8, padding: 8 } },
-          tooltip: { backgroundColor: '#13131a', borderColor: '#2e2e4a', borderWidth: 1,
-            titleColor: '#e8e8f0', bodyColor: '#9a9ab8',
-            callbacks: { label: c => ` ${c.label}: ${c.parsed}%` } }
+          legend:{ position:'bottom', labels:{ color:'#9a9ab8', boxWidth:8, padding:8 } },
+          tooltip:{ backgroundColor:'#13131a', borderColor:'#2e2e4a', borderWidth:1,
+            titleColor:'#e8e8f0', bodyColor:'#9a9ab8',
+            callbacks:{ label: c => ` ${c.label}: ${c.parsed}%` } }
         }
       }
     });
