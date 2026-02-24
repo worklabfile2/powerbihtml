@@ -18,34 +18,51 @@ body {
   -webkit-font-smoothing: subpixel-antialiased;
 }
 
-/* ═══ HEADER ═══ (Компактнее) */
+/* ═══ HEADER ═══ */
 .hdr {
   background: linear-gradient(135deg, #013d7e 0%, #1a5fa8 55%, #2272c3 100%);
   padding: 10px 15px 8px;
   flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
+.hdr-info { min-width: 0; }
 .emp-name {
-  font-size: clamp(18px, 2.8vw, 26px); /* Увеличено */
+  font-size: clamp(18px, 2.8vw, 26px);
   font-weight: 900; color: #fff;
   line-height: 1.1;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .emp-sub {
-  font-size: 11px; /* Увеличено */
+  font-size: 11px;
   color: rgba(255,255,255,0.65);
   letter-spacing: 0.1em; text-transform: uppercase;
   margin-top: 2px; font-weight: 700;
 }
 
+/* Переключатель языка */
+.lang-sw {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.lang-sw:hover { background: rgba(255,255,255,0.25); }
+
 /* ═══ BODY ═══ */
 .body {
   flex:1; min-height:0;
   display: grid;
-  grid-template-columns: 1fr 320px; /* Немного расширил правую часть для крупных шрифтов */
+  grid-template-columns: 1fr 320px;
   grid-template-rows: 1fr;
 }
 
-/* ═══ LEFT ═══ */
 .left {
   padding: 10px;
   display: flex; flex-direction: column; gap: 8px;
@@ -69,7 +86,7 @@ body {
   text-transform: uppercase; color: #8a9ab5; margin-bottom: 2px;
 }
 .pill-val {
-  font-size: clamp(28px, 4.5vw, 46px); /* Увеличено */
+  font-size: clamp(28px, 4.5vw, 46px);
   font-weight: 900; line-height: 1;
 }
 .pill-val.z1 { color:#c0392b; }
@@ -78,7 +95,6 @@ body {
 
 .chart-box { flex:1; min-height:0; position:relative; margin-top: 5px; }
 
-/* ═══ RIGHT ═══ */
 .right {
   padding: 10px;
   display: flex; flex-direction: column; gap: 8px;
@@ -124,6 +140,7 @@ body {
 <div id="R" style="display:contents"></div>
 <script>
 (function(){
+  // ВХОДНАЯ ЧАСТЬ (без изменений)
   var q=new URLSearchParams(location.search);
   var name=q.get('name'), data=q.get('data');
   var comment=q.get('comment')||'';
@@ -134,130 +151,199 @@ body {
   var bench=q.get('bench')||'No', iron=q.get('iron')||'No';
   var R=document.getElementById('R');
 
-  if(!name||!data){ document.body.innerHTML="<p class='empty'>\u2190 \u0412\u044b\u0431\u0435\u0440\u0438 \u0441\u0442\u0440\u043e\u043a\u0443</p>"; return; }
+  var currentLang = (q.get('lang') || 'ru').toLowerCase();
+
+  if(!name||!data){ 
+    R.innerHTML="<p class='empty'>" + (currentLang==='ru'?'\u2190 \u0412\u044b\u0431\u0435\u0440\u0438 \u0441\u0442\u0440\u043e\u043a\u0443':'\u2190 Select a row') + "</p>"; 
+    return; 
+  }
 
   var RAW=data.split('|').map(function(s){
     var lc=s.lastIndexOf(':'),sc=s.lastIndexOf(':',lc-1);
     return{p:s.substring(0,sc),r:parseFloat(s.substring(sc+1,lc))||0,z:parseInt(s.substring(lc+1))||1};
   }).filter(function(d){return d.p;});
   
-  if(!RAW.length){document.body.innerHTML="<p class='empty'>\u041d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445</p>";return;}
+  if(!RAW.length){
+    R.innerHTML="<p class='empty'>" + (currentLang==='ru'?'\u041d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445':'No data') + "</p>";
+    return;
+  }
 
-  function fp(v){ var p=v*100; return(p<0?'-':'')+Math.abs(p).toFixed(1).replace('.',',')+'\u0025'; }
-  function fm(v){ if(!v||v==='0')return'\u2014'; return '$\u00a0'+parseInt(v).toLocaleString('ru-RU'); }
+  // Переводы
+  var T = {
+    ru: {
+      dyn: 'Profitability Dynamics',
+      first: 'Первый период',
+      last: 'Последний период',
+      comm: 'Комментарий',
+      sal: 'ЗП',
+      avg: 'Средняя ЗП',
+      start: 'Старт',
+      stop: 'Стоп',
+      review: 'Последнее ревью',
+      bench: '2nd Bench',
+      iron: 'Iron List',
+      yes: 'Да',
+      no: 'Нет'
+    },
+    en: {
+      dyn: 'Profitability Dynamics',
+      first: 'First Period',
+      last: 'Last Period',
+      comm: 'Comment',
+      sal: 'Salary',
+      avg: 'Avg Salary',
+      start: 'Start',
+      stop: 'Stop',
+      review: 'Last Review',
+      bench: '2nd Bench',
+      iron: 'Iron List',
+      yes: 'Yes',
+      no: 'No'
+    }
+  };
+
+  function fp(v, lang){ 
+    var p=v*100; 
+    var res = Math.abs(p).toFixed(1);
+    if(lang === 'ru') res = res.replace('.', ',');
+    return(p<0?'-':'')+res+'\u0025'; 
+  }
+  function fm(v, lang){ 
+    if(!v||v==='0')return'\u2014'; 
+    var num = parseInt(v).toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US');
+    return lang === 'ru' ? '$\u00a0' + num : '$' + num;
+  }
   function iy(v){ return v&&(v.toLowerCase()==='yes'||v==='1'||v.toLowerCase()==='\u0434\u0430'); }
 
   var MO_RU=['\u044f\u043d\u0432','\u0444\u0435\u0432','\u043c\u0430\u0440','\u0430\u043f\u0440','\u043c\u0430\u0439','\u0438\u044e\u043d','\u0438\u044e\u043b','\u0430\u0432\u0433','\u0441\u0435\u043d','\u043e\u043a\u0442','\u043d\u043e\u044f','\u0434\u0435\u043a'];
-  var MO_EN=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-  function fmtLabel(s){
+  var MO_EN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function fmtLabel(s, lang){
     if(!s) return s;
     var m1=s.match(/^(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})$/);
-    if(m1){ var mo=parseInt(m1[2],10)-1; var yr=m1[3].length===4?m1[3].slice(2):m1[3]; return MO_RU[mo]+'-'+yr; }
-    var m2=s.match(/^([a-zA-Z]{3})[\s\-](\d{2,4})$/i);
-    if(m2){ var idx=MO_EN.indexOf(m2[1].toLowerCase()); var yr2=m2[2].length===4?m2[2].slice(2):m2[2]; return(idx>=0?MO_RU[idx]:m2[1].toLowerCase())+'-'+yr2; }
+    if(m1){ 
+      var mo=parseInt(m1[2],10)-1; 
+      var yr=m1[3].length===4?m1[3].slice(2):m1[3]; 
+      return (lang==='ru'?MO_RU[mo]:MO_EN[mo])+'-'+yr; 
+    }
     return s;
   }
 
   var vals=RAW.map(function(d){return d.r;});
-  var labs=RAW.map(function(d){return fmtLabel(d.p);});
   var zones=RAW.map(function(d){return d.z;});
   var n=vals.length;
-
   var BC={1:'#c0392b',2:'#9a6e00',3:'#1a6b3a'};
   var BF={1:'rgba(192,57,43,0.85)',2:'rgba(154,110,0,0.85)',3:'rgba(26,107,58,0.85)'};
   var ZC={1:'z1',2:'z2',3:'z3'};
   var bY=iy(bench),iY=iy(iron);
 
-  var cHTML=comment?"<div class='cmnt on' id='cm'><div class='cmnt-ico'>💬</div><div class='cmnt-body'><div class='cmnt-lbl'>\u041a\u043e\u043c\u043c\u0435\u043d\u0442\u0430\u0440\u0438\u0439</div><div class='cmnt-txt'>"+comment+"</div></div></div>":"";
+  function render(lang) {
+    var txt = T[lang];
+    var labs = RAW.map(function(d){return fmtLabel(d.p, lang);});
+    var cHTML = comment ? "<div class='cmnt on'><div class='cmnt-ico'>💬</div><div class='cmnt-body'><div class='cmnt-lbl'>"+txt.comm+"</div><div class='cmnt-txt'>"+comment+"</div></div></div>" : "";
 
-  R.innerHTML=
-    "<div class='hdr'><div class='emp-name'>"+name+"</div><div class='emp-sub'>Profitability Dynamics</div></div>"+
-    "<div class='body'>"+
-      "<div class='left'>"+
-        "<div class='pills'>"+
-          "<div class='pill "+ZC[zones[0]]+"' id='p0'><div class='pill-lbl'>\u041f\u0435\u0440\u0432\u044b\u0439 \u043f\u0435\u0440\u0438\u043e\u0434</div><div class='pill-val "+ZC[zones[0]]+"'>"+fp(vals[0])+"</div></div>"+
-          "<div class='pill "+ZC[zones[n-1]]+"' id='p1'><div class='pill-lbl'>\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u043f\u0435\u0440\u0438\u043e\u0434</div><div class='pill-val "+ZC[zones[n-1]]+"'>"+fp(vals[n-1])+"</div></div>"+
-        "</div>"+
-        "<div class='chart-box'><canvas id='ch'></canvas></div>"+
+    R.innerHTML=
+      "<div class='hdr'>" +
+        "<div class='hdr-info'><div class='emp-name'>"+name+"</div><div class='emp-sub'>"+txt.dyn+"</div></div>" +
+        "<button class='lang-sw' id='lsw'>"+(lang==='ru'?'RU':'EN')+"</button>" +
       "</div>"+
-      "<div class='right'>"+
-        cHTML+
-        "<div class='metrics'>"+
-          "<div class='mrow'><div class='m' id='m0'><div class='ml'>\u0417\u041f</div><div class='mv "+(salHigh?'sh':'so')+"'>"+fm(sal)+"</div></div>"+
-          "<div class='m' id='m1'><div class='ml'>\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u0417\u041f</div><div class='mv'>"+fm(avgsal)+"</div></div></div>"+
-          "<div class='mrow'><div class='m' id='m2'><div class='ml'>\u0421\u0442\u0430\u0440\u0442</div><div class='mv'>"+start+"</div></div>"+
-          "<div class='m' id='m3'><div class='ml'>\u0421\u0442\u043e\u043f</div><div class='mv'>"+stop+"</div></div></div>"+
-          "<div class='mrow s1'><div class='m' id='m4'><div class='ml'>\u0421\u043b\u0435\u0434\u0443\u044e\u0449\u0435\u0435 \u0440\u0435\u0432\u044c\u044e</div><div class='mv'>"+review+"</div></div></div>"+
-          "<div class='mrow'><div class='m' id='m5'><div class='ml'>2nd Bench</div><span class='badge "+(bY?'y':'n')+"\'>"+( bY?'Yes':'No')+"</span></div>"+
-          "<div class='m' id='m6'><div class='ml'>Iron List</div><span class='badge "+(iY?'y':'n')+"'>"+( iY?'Yes':'No')+"</span></div></div>"+
+      "<div class='body'>"+
+        "<div class='left'>"+
+          "<div class='pills'>"+
+            "<div class='pill "+ZC[zones[0]]+"'><div class='pill-lbl'>"+txt.first+"</div><div class='pill-val "+ZC[zones[0]]+"'>"+fp(vals[0], lang)+"</div></div>"+
+            "<div class='pill "+ZC[zones[n-1]]+"'><div class='pill-lbl'>"+txt.last+"</div><div class='pill-val "+ZC[zones[n-1]]+"'>"+fp(vals[n-1], lang)+"</div></div>"+
+          "</div>"+
+          "<div class='chart-box'><canvas id='ch'></canvas></div>"+
         "</div>"+
-      "</div>"+
-    "</div>";
+        "<div class='right'>"+
+          cHTML+
+          "<div class='metrics'>"+
+            "<div class='mrow'><div class='m'><div class='ml'>"+txt.sal+"</div><div class='mv "+(salHigh?'sh':'so')+"'>"+fm(sal, lang)+"</div></div>"+
+            "<div class='m'><div class='ml'>"+txt.avg+"</div><div class='mv'>"+fm(avgsal, lang)+"</div></div></div>"+
+            "<div class='mrow'><div class='m'><div class='ml'>"+txt.start+"</div><div class='mv'>"+start+"</div></div>"+
+            "<div class='m'><div class='ml'>"+txt.stop+"</div><div class='mv'>"+stop+"</div></div></div>"+
+            "<div class='mrow s1'><div class='m'><div class='ml'>"+txt.review+"</div><div class='mv'>"+review+"</div></div></div>"+
+            "<div class='mrow'><div class='m'><div class='ml'>"+txt.bench+"</div><span class='badge "+(bY?'y':'n')+"\'>"+(bY?txt.yes:txt.no)+"</span></div>"+
+            "<div class='m'><div class='ml'>"+txt.iron+"</div><span class='badge "+(iY?'y':'n')+"'>"+(iY?txt.yes:txt.no)+"</span></div></div>"+
+          "</div>"+
+        "</div>"+
+      "</div>";
 
-  // ── CHART ──
-  var dlPlugin={
-    id:'dl',
-    afterDatasetsDraw:function(chart){
-      var c=chart.ctx, ca=chart.chartArea; if(!ca)return;
-      var barW=(ca.width||300)/Math.max(n,1);
-      var sz=Math.max(10,Math.min(14,Math.floor(barW/3))); // Шрифт меток в графике чуть больше
-      chart.getDatasetMeta(0).data.forEach(function(bar,i){
-        c.save();
-        c.font='bold '+sz+'px Arial';
-        c.fillStyle=BC[zones[i]];
-        c.textAlign='center';
-        var yOff=vals[i]<0?16:-8;
-        c.fillText(fp(vals[i]),bar.x,bar.y+yOff);
-        c.restore();
-      });
-    }
-  };
+    document.getElementById('lsw').onclick = function() {
+      currentLang = currentLang === 'ru' ? 'en' : 'ru';
+      render(currentLang);
+    };
 
-  var zeroPlugin={
-    id:'zL',
-    afterDraw:function(chart){
-      var sc=chart.scales.y;if(!sc)return;
-      var y0=sc.getPixelForValue(0),c=chart.ctx;
-      c.save();c.beginPath();
-      c.moveTo(chart.scales.x.left,y0);c.lineTo(chart.scales.x.right,y0);
-      c.strokeStyle='rgba(1,61,126,0.2)';c.lineWidth=1.5;c.setLineDash([4,4]);
-      c.stroke();c.restore();
-    }
-  };
-
-  new Chart(document.getElementById('ch').getContext('2d'),{
-    type:'bar', plugins:[dlPlugin,zeroPlugin],
-    data:{
-      labels:labs,
-      datasets:[{
-        data:vals.map(function(v){return parseFloat((v*100).toFixed(4));}),
-        backgroundColor:zones.map(function(z){return BF[z];}),
-        borderWidth:0, borderRadius:4, borderSkipped:false,
-        maxBarThickness: 65
-      }]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      layout:{padding:{top:25,left:5,right:5,bottom:5}},
-      animation: false, // Анимация полностью отключена для мгновенного отображения
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'#013d7e',
-          titleFont:{size:13},
-          bodyFont:{size:14},
-          padding:10
-        }
-      },
-      scales:{
-        x:{
-          grid:{display:false},border:{display:false},
-          ticks:{font:{size:11,weight:'600'},color:'#8a9ab5',maxRotation:0}
-        },
-        y:{display:false,grace:'25%'}
+    // ── CHART ──
+    var dlPlugin={
+      id:'dl',
+      afterDatasetsDraw:function(chart){
+        var c=chart.ctx, ca=chart.chartArea; if(!ca)return;
+        var barW=(ca.width||300)/Math.max(n,1);
+        var sz=Math.max(10,Math.min(14,Math.floor(barW/3)));
+        chart.getDatasetMeta(0).data.forEach(function(bar,i){
+          c.save();
+          c.font='bold '+sz+'px Arial';
+          c.fillStyle=BC[zones[i]];
+          c.textAlign='center';
+          var yOff=vals[i]<0?16:-8;
+          c.fillText(fp(vals[i], lang),bar.x,bar.y+yOff);
+          c.restore();
+        });
       }
-    }
-  });
+    };
+
+    new Chart(document.getElementById('ch').getContext('2d'),{
+      type:'bar', 
+      plugins:[dlPlugin, {
+        id:'zL',
+        afterDraw:function(chart){
+          var sc=chart.scales.y;if(!sc)return;
+          var y0=sc.getPixelForValue(0),c=chart.ctx;
+          c.save();c.beginPath();
+          c.moveTo(chart.scales.x.left,y0);c.lineTo(chart.scales.x.right,y0);
+          c.strokeStyle='rgba(1,61,126,0.2)';c.lineWidth=1.5;c.setLineDash([4,4]);
+          c.stroke();c.restore();
+        }
+      }],
+      data:{
+        labels:labs,
+        datasets:[{
+          data:vals.map(function(v){return parseFloat((v*100).toFixed(4));}),
+          backgroundColor:zones.map(function(z){return BF[z];}),
+          borderWidth:0, borderRadius:4, borderSkipped:false,
+          maxBarThickness: 65
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        layout:{padding:{top:25,left:5,right:5,bottom:5}},
+        animation: false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{
+            backgroundColor:'#013d7e',
+            titleFont:{size:13},
+            bodyFont:{size:14},
+            padding:10,
+            callbacks: {
+              label: function(ctx) { return ' ' + fp(vals[ctx.dataIndex], lang); }
+            }
+          }
+        },
+        scales:{
+          x:{
+            grid:{display:false},border:{display:false},
+            ticks:{font:{size:11,weight:'600'},color:'#8a9ab5',maxRotation:0}
+          },
+          y:{display:false,grace:'25%'}
+        }
+      }
+    });
+  }
+
+  render(currentLang);
+
 })();
 </script>
 </body>
