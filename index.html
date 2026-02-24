@@ -78,8 +78,8 @@ body {
   border-bottom: 4px solid transparent;
 }
 .pill.z1 { border-bottom-color: #c0392b; }
-.pill.z2 { border-bottom-color: #9a6e00; }
-.pill.z3 { border-bottom-color: #1a6b3a; }
+.pill.z2 { border-bottom-color: #d4a017; } /* Сделали светлее */
+.pill.z3 { border-bottom-color: #27ae60; } /* Сделали светлее */
 
 .pill-lbl {
   font-size: 11px; font-weight: 800;
@@ -90,8 +90,8 @@ body {
   font-weight: 900; line-height: 1;
 }
 .pill-val.z1 { color:#c0392b; }
-.pill-val.z2 { color:#9a6e00; }
-.pill-val.z3 { color:#1a6b3a; }
+.pill-val.z2 { color:#d4a017; } /* Сделали светлее */
+.pill-val.z3 { color:#27ae60; } /* Сделали светлее */
 
 .chart-box { flex:1; min-height:0; position:relative; margin-top: 5px; }
 
@@ -124,7 +124,7 @@ body {
 .ml { font-size: 11px; font-weight: 800; text-transform: uppercase; color:#8a9ab5; margin-bottom: 4px; }
 .mv { font-size: 20px; font-weight: 900; color:#0d1b2e; line-height: 1; }
 .mv.sh { color:#c0392b; }
-.mv.so { color:#1a6b3a; }
+.mv.so { color:#27ae60; } /* Цвет текста "so" теперь соответствует светлому зеленому */
 
 .badge {
   display:inline-flex; padding:4px 12px; border-radius:6px;
@@ -140,7 +140,6 @@ body {
 <div id="R" style="display:contents"></div>
 <script>
 (function(){
-  // ВХОДНАЯ ЧАСТЬ (без изменений)
   var q=new URLSearchParams(location.search);
   var name=q.get('name'), data=q.get('data');
   var comment=q.get('comment')||'';
@@ -168,7 +167,6 @@ body {
     return;
   }
 
-  // Переводы
   var T = {
     ru: {
       dyn: 'Profitability Dynamics',
@@ -232,10 +230,14 @@ body {
   var vals=RAW.map(function(d){return d.r;});
   var zones=RAW.map(function(d){return d.z;});
   var n=vals.length;
-  var BC={1:'#c0392b',2:'#9a6e00',3:'#1a6b3a'};
-  var BF={1:'rgba(192,57,43,0.85)',2:'rgba(154,110,0,0.85)',3:'rgba(26,107,58,0.85)'};
-  var ZC={1:'z1',2:'z2',3:'z3'};
-  var bY=iy(bench),iY=iy(iron);
+
+  // Обновленные цвета (Solid)
+  var BC={1:'#c0392b', 2:'#d4a017', 3:'#27ae60'};
+  // Обновленные цвета (Translucent)
+  var BF={1:'rgba(192,57,43,0.85)', 2:'rgba(212,160,23,0.85)', 3:'rgba(39,174,96,0.85)'};
+  
+  var ZC={1:'z1', 2:'z2', 3:'z3'};
+  var bY=iy(bench), iY=iy(iron);
 
   function render(lang) {
     var txt = T[lang];
@@ -274,7 +276,6 @@ body {
       render(currentLang);
     };
 
-    // ── CHART ──
     var dlPlugin={
       id:'dl',
       afterDatasetsDraw:function(chart){
