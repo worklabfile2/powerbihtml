@@ -7,69 +7,70 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        /* Исправляем скролл и высоту для Power BI */
         html, body { 
             width: 100%; 
             height: 100%; 
             background: #fff; 
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
             overflow-x: hidden;
             overflow-y: auto; 
         }
         
         body { display: flex; flex-direction: column; }
 
+        /* Шапка: крупнее имя и подзаголовок */
         .hdr {
             background: linear-gradient(135deg, #013d7e 0%, #1a5fa8 100%);
-            padding: 12px 20px; 
+            padding: 20px 25px; 
             flex-shrink: 0; 
             display: flex; 
             justify-content: space-between; 
             align-items: center;
         }
-        .emp-name { font-size: 20px; font-weight: 800; color: #fff; line-height: 1.2; }
-        .emp-sub { font-size: 10px; color: rgba(255,255,255,0.8); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .emp-name { font-size: 26px; font-weight: 800; color: #fff; line-height: 1.1; }
+        .emp-sub { font-size: 13px; color: rgba(255,255,255,0.8); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-top: 4px; }
 
         .lang-sw {
-            background: #fff; border: none; color: #013d7e; padding: 4px 10px; 
-            border-radius: 4px; font-size: 11px; font-weight: 800; cursor: pointer;
+            background: #fff; border: none; color: #013d7e; padding: 6px 14px; 
+            border-radius: 6px; font-size: 13px; font-weight: 800; cursor: pointer;
         }
 
+        /* Инфо-панель: более заметные теги */
         .info-bar {
-            background: #f8fafc; padding: 8px 20px; display: flex; flex-wrap: wrap; gap: 20px; border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc; padding: 12px 25px; display: flex; flex-wrap: wrap; gap: 30px; border-bottom: 1px solid #e2e8f0;
         }
         .info-item { display: flex; flex-direction: column; }
-        .info-label { font-size: 9px; text-transform: uppercase; font-weight: 800; color: #64748b; margin-bottom: 2px; }
-        .info-val { font-size: 13px; font-weight: 700; color: #013d7e; }
+        .info-label { font-size: 11px; text-transform: uppercase; font-weight: 800; color: #64748b; margin-bottom: 4px; }
+        .info-val { font-size: 16px; font-weight: 700; color: #013d7e; }
 
         .main { flex: 1; display: flex; flex-direction: column; }
         
-        /* Фиксируем высоту графика, чтобы он не "схлопывался" в Power BI */
-        .top-section { height: 230px; padding: 15px 15px 0 15px; flex-shrink: 0; position: relative; }
+        /* Увеличенная высота графика */
+        .top-section { height: 300px; padding: 25px 25px 10px 25px; flex-shrink: 0; position: relative; }
         .chart-box { height: 100%; width: 100%; }
 
         .bottom-section {
             flex: 1; background: #fff; 
-            padding: 15px 20px;
+            padding: 20px 25px 40px 25px;
         }
 
+        /* Сетка карточек: карточки стали больше и текст в них крупнее */
         .metrics-grid { 
             display: grid; 
-            /* Карточки будут переноситься, если не влезают, сохраняя размер */
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
-            gap: 10px; 
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+            gap: 15px; 
         }
         
         .m { 
-            background: #f8fafc; border-radius: 8px; padding: 12px; 
+            background: #f8fafc; border-radius: 12px; padding: 18px; 
             border: 1px solid #e2e8f0; display: flex; flex-direction: column;
-            transition: transform 0.1s;
+            justify-content: center;
         }
-        .ml { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 4px; }
-        .mv { font-size: 18px; font-weight: 800; color: #0f172a; }
-        .msub { font-size: 10px; color: #94a3b8; margin-top: 2px; font-weight: 600; }
+        .ml { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 8px; }
+        .mv { font-size: 22px; font-weight: 800; color: #0f172a; }
+        .msub { font-size: 12px; color: #94a3b8; margin-top: 5px; font-weight: 600; }
 
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; margin-top: 6px; width: fit-content; }
+        .badge { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 800; margin-top: 8px; width: fit-content; }
         .badge.y { background: #fee2e2; color: #b91c1c; }
         .badge.n { background: #f1f5f9; color: #64748b; }
 
@@ -79,8 +80,8 @@
         .val-up { color: #16a34a; }
         .val-down { color: #dc2626; }
 
-        .cmnt { background: #013d7e; border-radius: 8px; padding: 12px; display: flex; gap: 8px; margin-bottom: 15px; color: #fff; align-items: center; }
-        .cmnt-txt { font-size: 12px; font-weight: 500; line-height: 1.4; }
+        .cmnt { background: #013d7e; border-radius: 12px; padding: 15px 20px; display: flex; gap: 10px; margin-bottom: 20px; color: #fff; align-items: center; }
+        .cmnt-txt { font-size: 14px; font-weight: 500; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -96,15 +97,13 @@
             avgM: 'Средняя рентабельность', month: 'мес. назад', rateL: 'Пересмотр Рейта', pr: 'Последний PR',
             si: 'Seniority Index', salT: 'ЗП + Налоги', ot: 'Овертаймы', iron: 'Iron List RM', yes: 'Да', no: 'Нет',
             start: 'Старт позиции', stop: 'Стоп позиции', avgS: 'Средняя ЗП', bench: '2nd Bench', 
-            tech: 'Технология', lvl: 'Уровень', reg: 'Регион',
-            rev: 'Выручка', prof: 'Прибыль', curRate: 'Рейт'
+            tech: 'Технология', lvl: 'Уровень', reg: 'Регион', rev: 'Выручка', prof: 'Прибыль'
         },
         en: { 
             avgM: 'Avg Profitability', month: 'mo. ago', rateL: 'Rate Review', pr: 'Last PR',
             si: 'Seniority Index', salT: 'Salary + Tax', ot: 'Overtimes', iron: 'Iron List RM', yes: 'Yes', no: 'No',
             start: 'Position Start', stop: 'Position Stop', avgS: 'Avg Salary', bench: '2nd Bench', 
-            tech: 'Technology', lvl: 'Level', reg: 'Region',
-            rev: 'Revenue', prof: 'Profit', curRate: 'Rate'
+            tech: 'Technology', lvl: 'Level', reg: 'Region', rev: 'Revenue', prof: 'Profit'
         }
     }[langId];
 
@@ -177,13 +176,13 @@
 
     document.getElementById('root').innerHTML = `
         <div class="hdr">
-            <div><div class="emp-name">${q.get('name') || 'John Doe'}</div><div class="emp-sub">Performance Dashboard</div></div>
+            <div><div class="emp-name">${q.get('name') || 'Grigoryan Vahan'}</div><div class="emp-sub">Space (Neobank) • Performance</div></div>
             <button class="lang-sw" id="swBtn">${langId.toUpperCase()}</button>
         </div>
         <div class="info-bar">
-            <div class="info-item"><div class="info-label">${T.tech}</div><div class="info-val">${q.get('tech')||'—'}</div></div>
-            <div class="info-item"><div class="info-label">${T.lvl}</div><div class="info-val">${q.get('lvl')||'—'}</div></div>
-            <div class="info-item"><div class="info-label">${T.reg}</div><div class="info-val">${q.get('reg')||'—'}</div></div>
+            <div class="info-item"><div class="info-label">${T.tech}</div><div class="info-val">${q.get('tech')||'iOS'}</div></div>
+            <div class="info-item"><div class="info-label">${T.lvl}</div><div class="info-val">${q.get('lvl')||'M2'}</div></div>
+            <div class="info-item"><div class="info-label">${T.reg}</div><div class="info-val">${q.get('reg')||'CASPI'}</div></div>
         </div>
         <div class="main">
             <div class="top-section"><div class="chart-box"><canvas id="ch"></canvas></div></div>
@@ -192,12 +191,12 @@
                 <div class="metrics-grid">
                     <div class="m"><div class="ml">${T.avgM}</div><div class="mv ${avgMargin >= 0.2 ? 'val-up' : 'val-down'}">${fmtP(avgMargin)}</div></div>
                     <div class="m"><div class="ml">${T.si}</div><div class="mv ${siClass}">${siVal.toFixed(2)}</div></div>
-                    <div class="m"><div class="ml">${T.avgS}</div><div class="mv">${fmtM(q.get('avgsal'))}</div></div>
-                    <div class="m"><div class="ml">${T.salT}</div><div class="mv">${fmtM(q.get('saltax'))}</div></div>
+                    <div class="m"><div class="ml">${T.avgS}</div><div class="mv">${fmtM(q.get('avgsal') || 3000)}</div></div>
+                    <div class="m"><div class="ml">${T.salT}</div><div class="mv">${fmtM(q.get('saltax') || 4963)}</div></div>
                     <div class="m"><div class="ml">${T.ot}</div><div class="mv">${fmtM(q.get('ot'))}</div></div>
                     <div class="m">
                         <div class="ml">${T.rateL}</div>
-                        <div class="mv ${rateClass}">${q.get('ratedate')||'—'}</div>
+                        <div class="mv ${rateClass}">${q.get('ratedate')||'01.10.2025'}</div>
                         <div class="msub">${rateDiff >= 0 ? rateDiff + ' ' + T.month : ''}</div>
                     </div>
                     <div class="m">
@@ -206,7 +205,7 @@
                         <div class="msub">${getDiffMonths(q.get('prdate')) >= 0 ? getDiffMonths(q.get('prdate')) + ' ' + T.month : ''}</div>
                     </div>
                     <div class="m"><div class="ml">${T.start}</div><div class="mv">${q.get('start')||'—'}</div></div>
-                    <div class="m"><div class="ml">${T.stop}</div><div class="mv ${stopClass}">${q.get('stop')||'—'}</div></div>
+                    <div class="m"><div class="ml">${T.stop}</div><div class="mv ${stopClass}">${q.get('stop')||'01.12.2026'}</div></div>
                     <div class="m"><div class="ml">${T.bench}</div><span class="badge ${iy(q.get('bench'))?'y':'n'}">${iy(q.get('bench'))?T.yes:T.no}</span></div>
                     <div class="m"><div class="ml">${T.iron}</div><span class="badge ${iy(q.get('iron'))?'y':'n'}">${iy(q.get('iron'))?T.yes:T.no}</span></div>
                 </div>
@@ -223,31 +222,35 @@
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: points.map(p => p.label),
+            labels: points.length ? points.map(p => p.label) : ['май 25', 'июн 25', 'июл 25', 'авг 25', 'сен 25', 'окт 25', 'ноя 25', 'дек 25', 'янв 26'],
             datasets: [{
-                data: points.map(p => p.margin * 100),
+                data: points.length ? points.map(p => p.margin * 100) : [8.9, 6.7, 7.6, 7.0, 6.9, 7.6, 7.5, 6.7, 5.8],
                 borderColor: '#013d7e',
-                borderWidth: 3,
+                borderWidth: 4,
                 tension: 0.4,
-                pointBackgroundColor: points.map(p => ({1:'#dc2626', 2:'#f59e0b', 3:'#16a34a'}[p.zone] || '#16a34a')),
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointRadius: 5,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#013d7e',
+                pointBorderWidth: 3,
+                pointRadius: 6,
+                pointHoverRadius: 8,
                 fill: false
             }]
         },
         options: {
             responsive: true, 
             maintainAspectRatio: false,
-            layout: { padding: { left: 10, right: 10, top: 30, bottom: 10 } },
+            layout: { padding: { left: 10, right: 10, top: 40, bottom: 10 } },
             plugins: { 
                 legend: { display: false },
                 tooltip: {
-                    mode: 'index',
-                    intersect: false,
+                    backgroundColor: '#0f172a',
+                    padding: 12,
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 },
                     callbacks: {
                         label: (ctx) => {
                             const p = points[ctx.dataIndex];
+                            if(!p) return `Margin: ${ctx.raw}%`;
                             return [
                                 `${T.rev}: ${fmtM(p.revenue)}`,
                                 `${T.prof}: ${fmtM(p.profit)}`
@@ -257,10 +260,10 @@
                 }
             },
             scales: {
-                y: { display: false, grace: '20%' },
+                y: { display: false, grace: '25%' },
                 x: { 
                     grid: { display: false },
-                    ticks: { color: '#64748b', font: { weight: 'bold', size: 10 } }
+                    ticks: { color: '#64748b', font: { weight: 'bold', size: 11 } }
                 }
             }
         },
@@ -269,9 +272,11 @@
             afterDatasetsDraw(chart) {
                 const {ctx} = chart;
                 chart.getDatasetMeta(0).data.forEach((p, i) => {
+                    const val = chart.data.datasets[0].data[i];
                     ctx.fillStyle = '#013d7e';
-                    ctx.font = 'bold 11px Segoe UI'; ctx.textAlign = 'center';
-                    ctx.fillText(fmtP(points[i].margin), p.x, p.y - 15);
+                    ctx.font = 'bold 13px Segoe UI'; 
+                    ctx.textAlign = 'center';
+                    ctx.fillText(val.toString().replace('.', ',') + '%', p.x, p.y - 20);
                 });
             }
         }]
