@@ -204,36 +204,26 @@ body {
   }).filter(function(d){return d.p;});
   if(!RAW.length){document.body.innerHTML="<p class='empty'>\u041d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445</p>";return;}
 
-  var vals=RAW.map(function(d){return d.r;});
-  var labs=RAW.map(function(d){return fmtLabel(d.p);});
-  var zones=RAW.map(function(d){return d.z;});
-  var n=vals.length;
-
   function fp(v){ var p=v*100; return(p<0?'-':'')+Math.abs(p).toFixed(1).replace('.',',')+'\u0025'; }
   function fm(v){ if(!v||v==='0')return'\u2014'; return '$\u00a0'+parseInt(v).toLocaleString('ru-RU'); }
   function iy(v){ return v&&(v.toLowerCase()==='yes'||v==='1'||v.toLowerCase()==='\u0434\u0430'); }
 
   // Конвертируем "01.12.2025" → "дек-25", "Jan-26" → "янв-26"
-  var MO_RU = ['\u044f\u043d\u0432','\u0444\u0435\u0432','\u043c\u0430\u0440','\u0430\u043f\u0440','\u043c\u0430\u0439','\u0438\u044e\u043d','\u0438\u044e\u043b','\u0430\u0432\u0433','\u0441\u0435\u043d','\u043e\u043a\u0442','\u043d\u043e\u044f','\u0434\u0435\u043a'];
-  var MO_EN = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  var MO_RU=['\u044f\u043d\u0432','\u0444\u0435\u0432','\u043c\u0430\u0440','\u0430\u043f\u0440','\u043c\u0430\u0439','\u0438\u044e\u043d','\u0438\u044e\u043b','\u0430\u0432\u0433','\u0441\u0435\u043d','\u043e\u043a\u0442','\u043d\u043e\u044f','\u0434\u0435\u043a'];
+  var MO_EN=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
   function fmtLabel(s){
     if(!s) return s;
-    // "01.12.2025" или "01.12.25"
-    var m1 = s.match(/^(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})$/);
-    if(m1){
-      var mo = parseInt(m1[2],10)-1;
-      var yr = m1[3].length===4 ? m1[3].slice(2) : m1[3];
-      return MO_RU[mo]+'-'+yr;
-    }
-    // "Jan-26" или "Jan 2026"
-    var m2 = s.match(/^([a-zA-Z]{3})[\s\-](\d{2,4})$/i);
-    if(m2){
-      var idx = MO_EN.indexOf(m2[1].toLowerCase());
-      var yr2 = m2[2].length===4 ? m2[2].slice(2) : m2[2];
-      return (idx>=0 ? MO_RU[idx] : m2[1].toLowerCase())+'-'+yr2;
-    }
+    var m1=s.match(/^(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})$/);
+    if(m1){ var mo=parseInt(m1[2],10)-1; var yr=m1[3].length===4?m1[3].slice(2):m1[3]; return MO_RU[mo]+'-'+yr; }
+    var m2=s.match(/^([a-zA-Z]{3})[\s\-](\d{2,4})$/i);
+    if(m2){ var idx=MO_EN.indexOf(m2[1].toLowerCase()); var yr2=m2[2].length===4?m2[2].slice(2):m2[2]; return(idx>=0?MO_RU[idx]:m2[1].toLowerCase())+'-'+yr2; }
     return s;
   }
+
+  var vals=RAW.map(function(d){return d.r;});
+  var labs=RAW.map(function(d){return fmtLabel(d.p);});
+  var zones=RAW.map(function(d){return d.z;});
+  var n=vals.length;
 
   var BC={1:'#c0392b',2:'#9a6e00',3:'#1a6b3a'};
   var BF={1:'rgba(192,57,43,0.78)',2:'rgba(154,110,0,0.78)',3:'rgba(26,107,58,0.78)'};
