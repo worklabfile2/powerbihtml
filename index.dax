@@ -23,9 +23,11 @@ VAR DateStop    = CALCULATE(MAX('Динамика по месяцам'[Стоп 
 VAR SecondBench = CALCULATE(MAX('Динамика по месяцам'[Секонд бенч]), 'Динамика по месяцам'[Период] = LastPeriod)
 VAR RateFromUrl = CALCULATE(MAX('Динамика по месяцам'[Расчетный рейт]), 'Динамика по месяцам'[Период] = LastPeriod)
 
--- 3. Комментарии и Iron List
+-- 3. Комментарии, Iron List и Iron List RM
 VAR PositionComment = LOOKUPVALUE('Комментарии по позициям'[Комментарий], 'Комментарии по позициям'[Сотрудник Проект], SelectedPosition)
 VAR IronList        = LOOKUPVALUE('Комментарии по позициям'[Айрон лист], 'Комментарии по позициям'[Сотрудник Проект], SelectedPosition)
+VAR IronListDate    = DateStart --поменять на реальную дату Iron List когда появится поле
+VAR IronListRM      = IronList --пока используем то же значение, потом заменить на отдельное поле Iron List RM
 
 -- 4. СБОР ДИНАМИКИ ДЛЯ ГРАФИКА (Все месяцы)
 VAR AllMonthsData = 
@@ -63,6 +65,8 @@ VAR PageURL =
     & "&stop="     & IF(ISBLANK(DateStop), "—", FORMAT(DateStop, "DD.MM.YYYY"))
     & "&bench="    & IF(SecondBench = "Да" || SecondBench = "Yes" || SecondBench = "1", "1", "0")
     & "&iron="     & IF(IronList = "Да" || IronList = "Yes" || IronList = "1", "1", "0")
+    & "&irondate=" & IF(ISBLANK(IronListDate), "—", FORMAT(IronListDate, "DD.MM.YYYY"))
+    & "&ironrm="   & IF(IronListRM = "Да" || IronListRM = "Yes" || IronListRM = "1", "1", "0")
     & "&comment="  & SUBSTITUTE(SUBSTITUTE(IF(ISBLANK(PositionComment), "", PositionComment), "|", " "), "&", " ")
     & "&data="     & DataPoints
 
@@ -70,7 +74,6 @@ RETURN
 IF(
     ISBLANK(SelectedPosition),
     "<p style='font-family:Segoe UI;color:#999;padding:20px; font-size:24px'>Выберите сотрудника</p>",
-    -- Убрали лишние ограничения высоты здесь, так как они теперь внутри HTML
     "<div style='position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;'>" & 
     "<iframe src='" & PageURL & "' style='width:100%;height:100%;border:none;'></iframe>" &
     "</div>"

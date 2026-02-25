@@ -10,69 +10,165 @@
         html, body { 
             width: 100%; height: 100%; background: #fff; 
             font-family: 'Segoe UI', system-ui, sans-serif; 
-            overflow-x: hidden; overflow-y: auto; 
+            overflow: hidden; 
         }
         
         body { display: flex; flex-direction: column; }
 
-        /* ГИГАНТСКАЯ ШАПКА */
+        /* ШАПКА С ИНДИКАТОРОМ СТАТУСА */
         .hdr {
             background: linear-gradient(135deg, #013d7e 0%, #1a5fa8 100%);
-            padding: 30px 40px; flex-shrink: 0; 
+            padding: 22px 30px; flex-shrink: 0; 
             display: flex; justify-content: space-between; align-items: center;
         }
-        .emp-name { font-size: 36px; font-weight: 900; color: #fff; line-height: 1; }
-        .emp-sub { font-size: 16px; color: rgba(255,255,255,0.8); text-transform: uppercase; font-weight: 700; letter-spacing: 2px; margin-top: 8px; }
+        .hdr-left { display: flex; align-items: center; gap: 18px; }
+        
+        /* ИНДИКАТОР СТАТУСА ПОЗИЦИИ */
+        .status-indicator {
+            width: 18px; height: 18px; border-radius: 50%; 
+            flex-shrink: 0;
+        }
+        .status-indicator.green { 
+            background: #10b981; 
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.8), 0 0 40px rgba(16, 185, 129, 0.4);
+        }
+        .status-indicator.yellow { 
+            background: #f59e0b; 
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.8), 0 0 40px rgba(245, 158, 11, 0.4);
+        }
+        .status-indicator.red { 
+            background: #ef4444; 
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.4);
+        }
+        
+        .emp-name { font-size: 26px; font-weight: 900; color: #fff; line-height: 1.1; }
+        .emp-sub { 
+            font-size: 12px; color: rgba(255,255,255,0.85); 
+            text-transform: uppercase; font-weight: 700; 
+            letter-spacing: 1.5px; margin-top: 5px; 
+        }
 
         .lang-sw {
-            background: #fff; border: none; color: #013d7e; padding: 10px 20px; 
-            border-radius: 8px; font-size: 16px; font-weight: 800; cursor: pointer;
+            background: #fff; border: none; color: #013d7e; 
+            padding: 8px 16px; border-radius: 6px; 
+            font-size: 13px; font-weight: 800; cursor: pointer;
+            transition: all 0.2s;
         }
+        .lang-sw:hover { transform: scale(1.05); }
 
-        /* УВЕЛИЧЕННАЯ ИНФО-ПАНЕЛЬ */
+        /* ИНФО-ПАНЕЛЬ */
         .info-bar {
-            background: #f1f5f9; padding: 20px 40px; display: flex; flex-wrap: wrap; gap: 50px; border-bottom: 2px solid #e2e8f0;
+            background: #f8fafc; padding: 14px 30px; 
+            display: flex; flex-wrap: wrap; gap: 35px; 
+            border-bottom: 2px solid #e2e8f0; flex-shrink: 0;
         }
         .info-item { display: flex; flex-direction: column; }
-        .info-label { font-size: 13px; text-transform: uppercase; font-weight: 800; color: #64748b; margin-bottom: 6px; }
-        .info-val { font-size: 22px; font-weight: 800; color: #013d7e; }
+        .info-label { 
+            font-size: 10px; text-transform: uppercase; 
+            font-weight: 800; color: #64748b; margin-bottom: 4px; 
+        }
+        .info-val { font-size: 17px; font-weight: 800; color: #013d7e; }
 
-        .main { flex: 1; display: flex; flex-direction: column; }
+        .main { flex: 1; display: flex; overflow: hidden; }
         
-        /* ГРАФИК ЕЩЕ ВЫШЕ */
-        .top-section { height: 380px; padding: 40px 40px 10px 40px; flex-shrink: 0; position: relative; }
-        .chart-box { height: 100%; width: 100%; }
+        /* ЛЕВАЯ ЧАСТЬ - ГРАФИК */
+        .left-section { 
+            flex: 1; 
+            padding: 20px 25px; 
+            display: flex; 
+            flex-direction: column;
+            min-width: 0;
+            background: #fff;
+        }
+        .chart-box { flex: 1; width: 100%; min-height: 0; }
 
-        .bottom-section { flex: 1; background: #fff; padding: 30px 40px 60px 40px; }
+        /* ПРАВАЯ ЧАСТЬ - КАРТОЧКИ */
+        .right-section { 
+            width: 420px; 
+            background: #f8fafc; 
+            padding: 20px 18px 20px 18px; 
+            overflow-y: auto;
+            border-left: 2px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+        .right-section::-webkit-scrollbar { width: 6px; }
+        .right-section::-webkit-scrollbar-track { background: #f1f5f9; }
+        .right-section::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
-        /* ОГРОМНЫЕ КАРТОЧКИ */
+        /* КОММЕНТАРИЙ */
+        .cmnt { 
+            background: linear-gradient(135deg, #013d7e 0%, #1a5fa8 100%);
+            border-radius: 10px; 
+            padding: 14px 18px; 
+            color: #fff; 
+            margin-bottom: 18px; 
+            font-size: 13px; 
+            line-height: 1.5; 
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(1, 61, 126, 0.2);
+        }
+
+        /* КАРТОЧКИ */
         .metrics-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
-            gap: 20px; 
+            display: flex;
+            flex-direction: column;
+            gap: 12px; 
         }
         
         .m { 
-            background: #f8fafc; border-radius: 16px; padding: 25px; 
-            border: 2px solid #e2e8f0; display: flex; flex-direction: column;
-            justify-content: center; min-height: 140px;
+            background: #fff; 
+            border-radius: 10px; 
+            padding: 16px; 
+            border: 2px solid #e2e8f0; 
+            display: flex; 
+            flex-direction: column;
+            transition: all 0.2s;
         }
-        .ml { font-size: 13px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 12px; }
-        .mv { font-size: 32px; font-weight: 900; color: #0f172a; letter-spacing: -1px; }
-        .msub { font-size: 14px; color: #94a3b8; margin-top: 8px; font-weight: 700; }
+        .m:hover { 
+            border-color: #cbd5e1; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .ml { 
+            font-size: 10px; font-weight: 800; 
+            text-transform: uppercase; color: #64748b; 
+            margin-bottom: 7px; letter-spacing: 0.5px;
+        }
+        .mv { 
+            font-size: 24px; font-weight: 900; 
+            color: #0f172a; letter-spacing: -0.5px; 
+        }
+        .msub { 
+            font-size: 11px; color: #94a3b8; 
+            margin-top: 5px; font-weight: 600; 
+        }
 
-        .badge { display: inline-block; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 800; margin-top: 10px; width: fit-content; }
-        .badge.y { background: #fee2e2; color: #b91c1c; }
-        .badge.n { background: #f1f5f9; color: #64748b; }
+        .badge { 
+            display: inline-block; 
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            font-size: 11px; 
+            font-weight: 800; 
+            margin-top: 7px; 
+            width: fit-content; 
+        }
+        .badge.y { background: #fee2e2; color: #dc2626; }
+        .badge.n { background: #e2e8f0; color: #64748b; }
 
-        .status-green { color: #16a34a !important; }
-        .status-yellow { color: #f59e0b !important; }
-        .status-red { color: #dc2626 !important; }
-        .val-up { color: #16a34a; }
-        .val-down { color: #dc2626; }
+        /* ОЧЕНЬ ЯРКИЕ ИНДИКАТОРЫ */
+        .status-green { color: #10b981 !important; font-weight: 900 !important; }
+        .status-yellow { color: #f59e0b !important; font-weight: 900 !important; }
+        .status-red { color: #ef4444 !important; font-weight: 900 !important; }
+        .val-up { color: #10b981; font-weight: 900; }
+        .val-down { color: #ef4444; font-weight: 900; }
 
-        .cmnt { background: #013d7e; border-radius: 16px; padding: 20px 30px; display: flex; gap: 15px; margin-bottom: 30px; color: #fff; align-items: center; }
-        .cmnt-txt { font-size: 18px; font-weight: 500; line-height: 1.5; }
+        /* СКРЫТЫЙ SI */
+        .hidden-metric {
+            font-size: 7px;
+            color: #e2e8f0;
+            margin-top: 15px;
+            text-align: center;
+            opacity: 0.4;
+        }
     </style>
 </head>
 <body>
@@ -86,15 +182,17 @@
     const T = {
         ru: { 
             avgM: 'Средняя рентабельность', month: 'мес. назад', rateL: 'Пересмотр Рейта', pr: 'Последний PR',
-            si: 'Seniority Index', salT: 'ЗП + Налоги', ot: 'Овертаймы', iron: 'Iron List RM', yes: 'Да', no: 'Нет',
-            start: 'Старт позиции', stop: 'Стоп позиции', avgS: 'Средняя ЗП', bench: '2nd Bench', 
-            tech: 'Технология', lvl: 'Уровень', reg: 'Регион', rev: 'Выручка', prof: 'Прибыль'
+            si: 'Seniority Index', salT: 'ЗП + Налоги', ot: 'Овертаймы', iron: 'Iron List', ironRM: 'Iron List RM',
+            yes: 'Да', no: 'Нет', start: 'Старт позиции', stop: 'Стоп позиции', 
+            bench: '2nd Bench', tech: 'Технология', lvl: 'Уровень', reg: 'Регион', 
+            rev: 'Выручка', prof: 'Прибыль', ironDate: 'Дата'
         },
         en: { 
             avgM: 'Avg Profitability', month: 'mo. ago', rateL: 'Rate Review', pr: 'Last PR',
-            si: 'Seniority Index', salT: 'Salary + Tax', ot: 'Overtimes', iron: 'Iron List RM', yes: 'Yes', no: 'No',
-            start: 'Position Start', stop: 'Position Stop', avgS: 'Avg Salary', bench: '2nd Bench', 
-            tech: 'Technology', lvl: 'Level', reg: 'Region', rev: 'Revenue', prof: 'Profit'
+            si: 'Seniority Index', salT: 'Salary + Tax', ot: 'Overtimes', iron: 'Iron List', ironRM: 'Iron List RM',
+            yes: 'Yes', no: 'No', start: 'Position Start', stop: 'Position Stop', 
+            bench: '2nd Bench', tech: 'Technology', lvl: 'Level', reg: 'Region', 
+            rev: 'Revenue', prof: 'Profit', ironDate: 'Date'
         }
     }[langId];
 
@@ -111,7 +209,6 @@
         return MO[mIdx] + " " + (parts[2] ? parts[2].slice(-2) : '');
     }
 
-    // Возвращаем старое форматирование процентов (с запятой)
     function fmtP(v) { return (v * 100).toFixed(1).replace('.', ',') + '%'; }
     
     function fmtM(v) { 
@@ -129,25 +226,31 @@
         return diff > 0 ? diff : 0;
     }
 
-    const siVal = parseFloat(q.get('si')) || 0;
+    // SI
+    const siVal = parseFloat(q.get('si')) || 2.00;
     let siClass = '';
     if (siVal < 2.99) siClass = 'status-green';
     else if (siVal >= 3 && siVal <= 3.24) siClass = 'status-yellow';
     else if (siVal >= 3.25) siClass = 'status-red';
 
+    // Rate Review
     const rateDiff = getDiffMonths(q.get('ratedate'));
     const rateClass = rateDiff > 12 ? 'status-red' : '';
 
+    // Stop Date
     const stopDateStr = q.get('stop');
     let stopClass = '';
     if (stopDateStr && stopDateStr !== '—') {
         const p = stopDateStr.split('.');
-        const stopDate = new Date(p[2], p[1]-1, p[0]);
-        const now = new Date();
-        const diffDays = (stopDate - now) / (1000 * 60 * 60 * 24);
-        if (diffDays >= 0 && diffDays <= 30) stopClass = 'status-red';
+        if (p.length >= 3) {
+            const stopDate = new Date(p[2], p[1]-1, p[0]);
+            const now = new Date();
+            const diffDays = (stopDate - now) / (1000 * 60 * 60 * 24);
+            if (diffDays >= 0 && diffDays <= 30) stopClass = 'status-red';
+        }
     }
 
+    // График
     const dataRaw = q.get('data') || '';
     let totalRev = 0, totalProf = 0;
     const points = dataRaw.split('|').filter(x => x).map(s => {
@@ -164,25 +267,44 @@
         };
     });
 
-    // Если данных нет, создаем заглушки для визуализации
     const displayPoints = points.length ? points : [
-        {label: 'май 25', margin: 0.089, revenue: 10000, profit: 890},
-        {label: 'июн 25', margin: 0.067, revenue: 10000, profit: 670},
-        {label: 'июл 25', margin: 0.076, revenue: 10000, profit: 760},
-        {label: 'авг 25', margin: 0.070, revenue: 10000, profit: 700},
-        {label: 'сен 25', margin: 0.069, revenue: 10000, profit: 690},
-        {label: 'окт 25', margin: 0.076, revenue: 10000, profit: 760},
-        {label: 'ноя 25', margin: 0.075, revenue: 10000, profit: 750},
-        {label: 'дек 25', margin: 0.067, revenue: 10000, profit: 670},
-        {label: 'янв 26', margin: 0.058, revenue: 10000, profit: 580}
+        {label: 'май 25', margin: 0.089, revenue: 10000, profit: 890, zone: 2},
+        {label: 'июн 25', margin: 0.067, revenue: 10000, profit: 670, zone: 2},
+        {label: 'июл 25', margin: 0.076, revenue: 10000, profit: 760, zone: 2},
+        {label: 'авг 25', margin: 0.070, revenue: 10000, profit: 700, zone: 2},
+        {label: 'сен 25', margin: 0.069, revenue: 10000, profit: 690, zone: 2},
+        {label: 'окт 25', margin: 0.076, revenue: 10000, profit: 760, zone: 1},
+        {label: 'ноя 25', margin: 0.075, revenue: 10000, profit: 750, zone: 1},
+        {label: 'дек 25', margin: 0.067, revenue: 10000, profit: 670, zone: 1},
+        {label: 'янв 26', margin: 0.058, revenue: 10000, profit: 580, zone: 1}
     ];
 
-    const avgMargin = totalRev !== 0 ? (totalProf / totalRev) : 0.072; // Заглушка 7.2% если данных нет
+    const avgMargin = totalRev !== 0 ? (totalProf / totalRev) : 0.072;
+    
+    // ИНДИКАТОР ПОЗИЦИИ (на основе средней рентабельности)
+    let statusClass = 'green';
+    if (avgMargin < 0.05) statusClass = 'red';
+    else if (avgMargin >= 0.05 && avgMargin < 0.1) statusClass = 'yellow';
+    else statusClass = 'green';
+    
+    // ЗП + НАЛОГИ С ЦВЕТОМ (сравнение со средней)
+    const avgSalary = parseFloat(q.get('avgsal')) || 3000;
+    const salaryTax = parseFloat(q.get('saltax')) || 4963;
+    let salaryClass = '';
+    if (salaryTax > avgSalary) salaryClass = 'status-red';
+    else if (salaryTax < avgSalary) salaryClass = 'status-green';
+    
     const iy = (v) => v && (v.toLowerCase()==='yes' || v==='1' || v.toLowerCase()==='да');
 
     document.getElementById('root').innerHTML = `
         <div class="hdr">
-            <div><div class="emp-name">${q.get('name') || 'Grigoryan Vahan'}</div><div class="emp-sub">Space (Neobank) • Performance Dashboard</div></div>
+            <div class="hdr-left">
+                <div class="status-indicator ${statusClass}"></div>
+                <div>
+                    <div class="emp-name">${q.get('name') || 'Grigoryan Vahan'}</div>
+                    <div class="emp-sub">Space (Neobank) • Performance Dashboard</div>
+                </div>
+            </div>
             <button class="lang-sw" id="swBtn">${langId.toUpperCase()}</button>
         </div>
         <div class="info-bar">
@@ -191,15 +313,25 @@
             <div class="info-item"><div class="info-label">${T.reg}</div><div class="info-val">${q.get('reg')||'CASPI'}</div></div>
         </div>
         <div class="main">
-            <div class="top-section"><div class="chart-box"><canvas id="ch"></canvas></div></div>
-            <div class="bottom-section">
-                ${q.get('comment') ? `<div class="cmnt"><div class="cmnt-txt">💬 ${q.get('comment')}</div></div>` : ''}
+            <div class="left-section">
+                <div class="chart-box"><canvas id="ch"></canvas></div>
+            </div>
+            <div class="right-section">
+                ${q.get('comment') ? `<div class="cmnt">💬 ${q.get('comment')}</div>` : ''}
                 <div class="metrics-grid">
-                    <div class="m"><div class="ml">${T.avgM}</div><div class="mv ${avgMargin >= 0.2 ? 'val-up' : 'val-down'}">${fmtP(avgMargin)}</div></div>
-                    <div class="m"><div class="ml">${T.si}</div><div class="mv ${siClass}">${(siVal || 2.00).toFixed(2)}</div></div>
-                    <div class="m"><div class="ml">${T.avgS}</div><div class="mv">${fmtM(q.get('avgsal') || 3000)}</div></div>
-                    <div class="m"><div class="ml">${T.salT}</div><div class="mv">${fmtM(q.get('saltax') || 4963)}</div></div>
-                    <div class="m"><div class="ml">${T.ot}</div><div class="mv">${fmtM(q.get('ot'))}</div></div>
+                    <div class="m">
+                        <div class="ml">${T.avgM}</div>
+                        <div class="mv ${avgMargin >= 0.2 ? 'val-up' : avgMargin < 0.05 ? 'val-down' : ''}">${fmtP(avgMargin)}</div>
+                    </div>
+                    <div class="m">
+                        <div class="ml">${T.salT}</div>
+                        <div class="mv ${salaryClass}">${fmtM(salaryTax)}</div>
+                        ${avgSalary ? `<div class="msub">Средняя: ${fmtM(avgSalary)}</div>` : ''}
+                    </div>
+                    <div class="m">
+                        <div class="ml">${T.ot}</div>
+                        <div class="mv">${fmtM(q.get('ot'))}</div>
+                    </div>
                     <div class="m">
                         <div class="ml">${T.rateL}</div>
                         <div class="mv ${rateClass}">${q.get('ratedate')||'01.10.2025'}</div>
@@ -208,13 +340,31 @@
                     <div class="m">
                         <div class="ml">${T.pr}</div>
                         <div class="mv">${q.get('prdate')||'—'}</div>
-                        <div class="msub">${getDiffMonths(q.get('prdate')) >= 0 ? getDiffMonths(q.get('prdate')) + ' ' + T.month : ''}</div>
+                        ${getDiffMonths(q.get('prdate')) >= 0 ? `<div class="msub">${getDiffMonths(q.get('prdate'))} ${T.month}</div>` : ''}
                     </div>
-                    <div class="m"><div class="ml">${T.start}</div><div class="mv">${q.get('start')||'—'}</div></div>
-                    <div class="m"><div class="ml">${T.stop}</div><div class="mv ${stopClass}">${q.get('stop')||'01.12.2026'}</div></div>
-                    <div class="m"><div class="ml">${T.bench}</div><span class="badge ${iy(q.get('bench'))?'y':'n'}">${iy(q.get('bench'))?T.yes:T.no}</span></div>
-                    <div class="m"><div class="ml">${T.iron}</div><span class="badge ${iy(q.get('iron'))?'y':'n'}">${iy(q.get('iron'))?T.yes:T.no}</span></div>
+                    <div class="m">
+                        <div class="ml">${T.start}</div>
+                        <div class="mv">${q.get('start')||'—'}</div>
+                    </div>
+                    <div class="m">
+                        <div class="ml">${T.stop}</div>
+                        <div class="mv ${stopClass}">${q.get('stop')||'01.12.2026'}</div>
+                    </div>
+                    <div class="m">
+                        <div class="ml">${T.bench}</div>
+                        <span class="badge ${iy(q.get('bench'))?'y':'n'}">${iy(q.get('bench'))?T.yes:T.no}</span>
+                    </div>
+                    <div class="m">
+                        <div class="ml">${T.iron}</div>
+                        <span class="badge ${iy(q.get('iron'))?'y':'n'}">${iy(q.get('iron'))?T.yes:T.no}</span>
+                        <div class="msub">${T.ironDate}: ${q.get('irondate')||'—'}</div>
+                    </div>
+                    <div class="m">
+                        <div class="ml">${T.ironRM}</div>
+                        <span class="badge ${iy(q.get('ironrm'))?'y':'n'}">${iy(q.get('ironrm'))?T.yes:T.no}</span>
+                    </div>
                 </div>
+                <div class="hidden-metric">SI: ${siVal.toFixed(2)}</div>
             </div>
         </div>`;
 
@@ -224,6 +374,14 @@
         window.location.href = u.toString();
     };
 
+    // ЦВЕТА ТОЧЕК ПО ЗОНАМ
+    function getZoneColor(zone) {
+        if (zone === 1) return '#10b981'; // Зеленая зона
+        if (zone === 2) return '#f59e0b'; // Желтая зона
+        if (zone === 3) return '#ef4444'; // Красная зона
+        return '#64748b'; // Серый по умолчанию
+    }
+
     const ctx = document.getElementById('ch').getContext('2d');
     new Chart(ctx, {
         type: 'line',
@@ -232,11 +390,11 @@
             datasets: [{
                 data: displayPoints.map(p => p.margin * 100),
                 borderColor: '#013d7e',
-                borderWidth: 5,
+                borderWidth: 4,
                 tension: 0.4,
-                pointBackgroundColor: '#fff',
-                pointBorderColor: '#013d7e',
-                pointBorderWidth: 4,
+                pointBackgroundColor: displayPoints.map(p => getZoneColor(p.zone)),
+                pointBorderColor: '#fff',
+                pointBorderWidth: 3,
                 pointRadius: 8,
                 pointHoverRadius: 10,
                 fill: false
@@ -245,15 +403,15 @@
         options: {
             responsive: true, 
             maintainAspectRatio: false,
-            layout: { padding: { left: 20, right: 20, top: 50, bottom: 20 } },
+            layout: { padding: { left: 15, right: 15, top: 35, bottom: 15 } },
             plugins: { 
                 legend: { display: false },
                 tooltip: {
                     backgroundColor: 'rgba(1, 61, 126, 0.95)',
-                    padding: 15,
-                    titleFont: { size: 16, weight: 'bold' },
-                    bodyFont: { size: 14, weight: '600' },
-                    cornerRadius: 10,
+                    padding: 12,
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13, weight: '600' },
+                    cornerRadius: 8,
                     callbacks: {
                         label: (ctx) => {
                             const p = displayPoints[ctx.dataIndex];
@@ -269,7 +427,7 @@
                 y: { display: false, grace: '30%' },
                 x: { 
                     grid: { display: false },
-                    ticks: { color: '#64748b', font: { weight: '800', size: 14 } }
+                    ticks: { color: '#64748b', font: { weight: '700', size: 12 } }
                 }
             }
         },
@@ -280,10 +438,9 @@
                 chart.getDatasetMeta(0).data.forEach((p, i) => {
                     const val = displayPoints[i].margin;
                     ctx.fillStyle = '#013d7e';
-                    ctx.font = 'bold 16px Segoe UI'; 
+                    ctx.font = 'bold 13px Segoe UI'; 
                     ctx.textAlign = 'center';
-                    // Используем старое форматирование через функцию fmtP
-                    ctx.fillText(fmtP(val), p.x, p.y - 25);
+                    ctx.fillText(fmtP(val), p.x, p.y - 18);
                 });
             }
         }]
