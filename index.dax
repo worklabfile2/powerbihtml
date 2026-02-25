@@ -1,0 +1,77 @@
+html_chart_url = 
+VAR SelectedPosition = SELECTEDVALUE('Динамика по месяцам'[Сотрудник / Проект])
+
+-- 1. Находим последний период сотрудника для заполнения карточек
+VAR LastPeriod = 
+    CALCULATE(
+        MAX('Динамика по месяцам'[Период]), 
+        ALLEXCEPT('Динамика по месяцам', 'Динамика по месяцам'[Сотрудник / Проект])
+    )
+
+-- 2. Собираем данные для КАРТОЧЕК (только на последний период)
+VAR Tech        = CALCULATE(MAX('Динамика по месяцам'[Технология]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR Lvl         = CALCULATE(MAX('Динамика по месяцам'[Уровень]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR Reg         = CALCULATE(MAX('Динамика по месяцам'[Регион]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR SI          = 2 --поменять на сеньорити индекс
+VAR AvgSalary   = CALCULATE(MAX('Динамика по месяцам'[Средняя зп по уровню, технологии]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR SalaryTax   = CALCULATE(MAX('Динамика по месяцам'[Общая ЗП 2.0]), 'Динамика по месяцам'[Период] = LastPeriod) + CALCULATE(MAX('Динамика по месяцам'[Налоги, усредн.]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR Overtimes   = CALCULATE(MAX('Динамика по месяцам'[Оверы на коммерческих проектах]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR DateRate    = CALCULATE(MAX('Динамика по месяцам'[Последнее ревью]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR DatePR      = CALCULATE(MAX('Динамика по месяцам'[Старт позиции]), 'Динамика по месяцам'[Период] = LastPeriod) --поменять на дату PR
+VAR DateStart   = CALCULATE(MAX('Динамика по месяцам'[Старт позиции]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR DateStop    = CALCULATE(MAX('Динамика по месяцам'[Стоп позиции]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR SecondBench = CALCULATE(MAX('Динамика по месяцам'[Секонд бенч]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR RateFromUrl = CALCULATE(MAX('Динамика по месяцам'[Расчетный рейт]), 'Динамика по месяцам'[Период] = LastPeriod)
+
+-- 3. Комментарии и Iron List
+VAR PositionComment = LOOKUPVALUE('Комментарии по позициям'[Комментарий], 'Комментарии по позициям'[Сотрудник Проект], SelectedPosition)
+VAR IronList        = LOOKUPVALUE('Комментарии по позициям'[Айрон лист], 'Комментарии по позициям'[Сотрудник Проект], SelectedPosition)
+
+-- 4. СБОР ДИНАМИКИ ДЛЯ ГРАФИКА (Все месяцы)
+VAR AllMonthsData = 
+    CALCULATETABLE(
+        'Динамика по месяцам',
+        ALLEXCEPT('Динамика по месяцам', 'Динамика по месяцам'[Сотрудник / Проект])
+    )
+
+VAR DataPoints = 
+    CONCATENATEX(
+        TOPN(999, AllMonthsData, 'Динамика по месяцам'[Период], ASC),
+        FORMAT('Динамика по месяцам'[Период], "DD.MM.YYYY")
+            & ":" & SUBSTITUTE(FORMAT('Динамика по месяцам'[Выручка, усредн.], "0.00"), ",", ".")
+            & ":" & SUBSTITUTE(FORMAT('Динамика по месяцам'[total прибыль при 18,5 2025], "0.00"), ",", ".")
+            & ":" & FORMAT('Динамика по месяцам'[Сортировка зон], "0"),
+        "|",
+        'Динамика по месяцам'[Период], ASC
+    )
+
+-- 5. Сборка финальной ссылки
+VAR PageURL = 
+    "https://powerbihtml.vercel.app/?" 
+    & "name="      & SelectedPosition
+    & "&tech="     & Tech
+    & "&lvl="      & Lvl
+    & "&reg="      & Reg
+    & "&si="       & SUBSTITUTE(FORMAT(SI, "0.00"), ",", ".")
+    & "&avgsal="   & FORMAT(AvgSalary, "0")
+    & "&saltax="   & FORMAT(SalaryTax, "0")
+    & "&ot="       & FORMAT(Overtimes, "0")
+    & "&rate="     & FORMAT(RateFromUrl, "0")
+    & "&ratedate=" & FORMAT(DateRate, "DD.MM.YYYY")
+    & "&prdate="   & FORMAT(DatePR, "DD.MM.YYYY")
+    & "&start="    & FORMAT(DateStart, "DD.MM.YYYY")
+    & "&stop="     & IF(ISBLANK(DateStop), "—", FORMAT(DateStop, "DD.MM.YYYY"))
+    & "&bench="    & IF(SecondBench = "Да" || SecondBench = "Yes" || SecondBench = "1", "1", "0")
+    & "&iron="     & IF(IronList = "Да" || IronList = "Yes" || IronList = "1", "1", "0")
+    & "&comment="  & SUBSTITUTE(SUBSTITUTE(IF(ISBLANK(PositionComment), "", PositionComment), "|", " "), "&", " ")
+    & "&data="     & DataPoints
+
+RETURN
+IF(
+    ISBLANK(SelectedPosition),
+    "<p style='font-family:Segoe UI;color:#999;padding:20px; font-size:24px'>Выберите сотрудника</p>",
+    -- Убрали лишние ограничения высоты здесь, так как они теперь внутри HTML
+    "<div style='position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;'>" & 
+    "<iframe src='" & PageURL & "' style='width:100%;height:100%;border:none;'></iframe>" &
+    "</div>"
+)
