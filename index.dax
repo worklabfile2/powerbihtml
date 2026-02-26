@@ -1,35 +1,40 @@
 html_chart_url = 
 VAR SelectedPosition = SELECTEDVALUE('Динамика по месяцам'[Сотрудник / Проект])
 
--- 1. Находим последний период сотрудника для заполнения карточек
+-- 1. Находим последний период
 VAR LastPeriod = 
     CALCULATE(
         MAX('Динамика по месяцам'[Период]), 
         ALLEXCEPT('Динамика по месяцам', 'Динамика по месяцам'[Сотрудник / Проект])
     )
 
--- 2. Собираем данные для КАРТОЧЕК (только на последний период)
-VAR Tech        = CALCULATE(MAX('Динамика по месяцам'[Технология]), 'Динамика по месяцам'[Период] = LastPeriod)
-VAR Lvl         = CALCULATE(MAX('Динамика по месяцам'[Уровень]), 'Динамика по месяцам'[Период] = LastPeriod)
-VAR Reg         = CALCULATE(MAX('Динамика по месяцам'[Регион]), 'Динамика по месяцам'[Период] = LastPeriod)
-VAR SI          = 2 --поменять на сеньорити индекс
-VAR AvgSalary   = CALCULATE(MAX('Динамика по месяцам'[Средняя зп по уровню, технологии]), 'Динамика по месяцам'[Период] = LastPeriod)
-VAR SalaryTax   = CALCULATE(MAX('Динамика по месяцам'[Общая ЗП 2.0]), 'Динамика по месяцам'[Период] = LastPeriod) + CALCULATE(MAX('Динамика по месяцам'[Налоги, усредн.]), 'Динамика по месяцам'[Период] = LastPeriod)
-VAR Overtimes   = CALCULATE(MAX('Динамика по месяцам'[Оверы на коммерческих проектах]), 'Динамика по месяцам'[Период] = LastPeriod)
-VAR DateRate    = CALCULATE(MAX('Динамика по месяцам'[Последнее ревью]), 'Динамика по месяцам'[Период] = LastPeriod)
-VAR DatePR      = CALCULATE(MAX('Динамика по месяцам'[Старт позиции]), 'Динамика по месяцам'[Период] = LastPeriod) --поменять на дату PR
-VAR DateStart   = CALCULATE(MAX('Динамика по месяцам'[Старт позиции]), 'Динамика по месяцам'[Период] = LastPeriod)
-VAR DateStop    = CALCULATE(MAX('Динамика по месяцам'[Стоп позиции]), 'Динамика по месяцам'[Период] = LastPeriod)
+-- 2. Данные для КАРТОЧЕК с заглушками
+VAR Tech      = COALESCE(CALCULATE(MAX('Динамика по месяцам'[Технология]), 'Динамика по месяцам'[Период] = LastPeriod), "—")
+VAR Lvl       = COALESCE(CALCULATE(MAX('Динамика по месяцам'[Уровень]), 'Динамика по месяцам'[Период] = LastPeriod), "—")
+VAR Reg       = COALESCE(CALCULATE(MAX('Динамика по месяцам'[Регион]), 'Динамика по месяцам'[Период] = LastPeriod), "—")
+VAR SI        = 2.45 -- Здесь подставь свою меру Seniority Index
+VAR AvgSalary = COALESCE(CALCULATE(MAX('Динамика по месяцам'[Средняя зп по уровню, технологии]), 'Динамика по месяцам'[Период] = LastPeriod), 0)
+
+VAR SalaryRaw = CALCULATE(MAX('Динамика по месяцам'[Общая ЗП 2.0]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR TaxRaw    = CALCULATE(MAX('Динамика по месяцам'[Налоги, усредн.]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR SalaryTax = COALESCE(SalaryRaw + TaxRaw, 0)
+
+VAR Overtimes = COALESCE(CALCULATE(MAX('Динамика по месяцам'[Оверы на коммерческих проектах]), 'Динамика по месяцам'[Период] = LastPeriod), 0)
+VAR DateRate  = CALCULATE(MAX('Динамика по месяцам'[Последнее ревью]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR DatePR    = DateRate -- Заглушка, пока нет поля PR
+VAR DateStart = CALCULATE(MAX('Динамика по месяцам'[Старт позиции]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR DateStop  = CALCULATE(MAX('Динамика по месяцам'[Стоп позиции]), 'Динамика по месяцам'[Период] = LastPeriod)
+
 VAR SecondBench = CALCULATE(MAX('Динамика по месяцам'[Секонд бенч]), 'Динамика по месяцам'[Период] = LastPeriod)
-VAR RateFromUrl = CALCULATE(MAX('Динамика по месяцам'[Расчетный рейт]), 'Динамика по месяцам'[Период] = LastPeriod)
+VAR RateFromUrl = COALESCE(CALCULATE(MAX('Динамика по месяцам'[Расчетный рейт]), 'Динамика по месяцам'[Период] = LastPeriod), 0)
 
--- 3. Комментарии, Iron List и Iron List RM
-VAR PositionComment = LOOKUPVALUE('Комментарии по позициям'[Комментарий], 'Комментарии по позициям'[Сотрудник Проект], SelectedPosition)
+-- 3. Комментарии и Списки
+VAR RawComment      = LOOKUPVALUE('Комментарии по позициям'[Комментарий], 'Комментарии по позициям'[Сотрудник Проект], SelectedPosition)
 VAR IronList        = LOOKUPVALUE('Комментарии по позициям'[Айрон лист], 'Комментарии по позициям'[Сотрудник Проект], SelectedPosition)
-VAR IronListDate    = DateStart --поменять на реальную дату Iron List когда появится поле
-VAR IronListRM      = IronList --пока используем то же значение, потом заменить на отдельное поле Iron List RM
+VAR IronListDate    = DateStart -- Заглушка
+VAR IronListRM      = IronList
 
--- 4. СБОР ДИНАМИКИ ДЛЯ ГРАФИКА (Все месяцы)
+-- 4. СБОР ДИНАМИКИ ДЛЯ ГРАФИКА
 VAR AllMonthsData = 
     CALCULATETABLE(
         'Динамика по месяцам',
@@ -38,11 +43,11 @@ VAR AllMonthsData =
 
 VAR DataPoints = 
     CONCATENATEX(
-        TOPN(999, AllMonthsData, 'Динамика по месяцам'[Период], ASC),
-        FORMAT('Динамика по месяцам'[Период], "DD.MM.YYYY")
-            & ":" & SUBSTITUTE(FORMAT('Динамика по месяцам'[Выручка, усредн.], "0.00"), ",", ".")
-            & ":" & SUBSTITUTE(FORMAT('Динамика по месяцам'[total прибыль при 18,5 2025], "0.00"), ",", ".")
-            & ":" & FORMAT('Динамика по месяцам'[Сортировка зон], "0"),
+        TOPN(12, AllMonthsData, 'Динамика по месяцам'[Период], ASC), -- Берем последние 12 точек
+        FORMAT('Динамика по месяцам'[Период], "MM.YY") -- Короткий формат для графика
+            & ":" & SUBSTITUTE(FORMAT(COALESCE('Динамика по месяцам'[Выручка, усредн.], 0), "0.00"), ",", ".")
+            & ":" & SUBSTITUTE(FORMAT(COALESCE('Динамика по месяцам'[total прибыль при 18,5 2025], 0), "0.00"), ",", ".")
+            & ":" & FORMAT(COALESCE('Динамика по месяцам'[Сортировка зон], 2), "0"),
         "|",
         'Динамика по месяцам'[Период], ASC
     )
@@ -50,7 +55,7 @@ VAR DataPoints =
 -- 5. Сборка финальной ссылки
 VAR PageURL = 
     "https://powerbihtml.vercel.app/?" 
-    & "name="      & SelectedPosition
+    & "name="      & SUBSTITUTE(SelectedPosition, "&", "and")
     & "&tech="     & Tech
     & "&lvl="      & Lvl
     & "&reg="      & Reg
@@ -59,22 +64,22 @@ VAR PageURL =
     & "&saltax="   & FORMAT(SalaryTax, "0")
     & "&ot="       & FORMAT(Overtimes, "0")
     & "&rate="     & FORMAT(RateFromUrl, "0")
-    & "&ratedate=" & FORMAT(DateRate, "DD.MM.YYYY")
-    & "&prdate="   & FORMAT(DatePR, "DD.MM.YYYY")
-    & "&start="    & FORMAT(DateStart, "DD.MM.YYYY")
+    & "&ratedate=" & COALESCE(FORMAT(DateRate, "DD.MM.YYYY"), "—")
+    & "&prdate="   & COALESCE(FORMAT(DatePR, "DD.MM.YYYY"), "—")
+    & "&start="    & COALESCE(FORMAT(DateStart, "DD.MM.YYYY"), "—")
     & "&stop="     & IF(ISBLANK(DateStop), "—", FORMAT(DateStop, "DD.MM.YYYY"))
-    & "&bench="    & IF(SecondBench = "Да" || SecondBench = "Yes" || SecondBench = "1", "1", "0")
-    & "&iron="     & IF(IronList = "Да" || IronList = "Yes" || IronList = "1", "1", "0")
+    & "&bench="    & IF(SecondBench IN {"Да", "Yes", "1"}, "1", "0")
+    & "&iron="     & IF(IronList IN {"Да", "Yes", "1"}, "1", "0")
     & "&irondate=" & IF(ISBLANK(IronListDate), "—", FORMAT(IronListDate, "DD.MM.YYYY"))
-    & "&ironrm="   & IF(IronListRM = "Да" || IronListRM = "Yes" || IronListRM = "1", "1", "0")
-    & "&comment="  & SUBSTITUTE(SUBSTITUTE(IF(ISBLANK(PositionComment), "", PositionComment), "|", " "), "&", " ")
+    & "&ironrm="   & IF(IronListRM IN {"Да", "Yes", "1"}, "1", "0")
+    & "&comment="  & SUBSTITUTE(SUBSTITUTE(COALESCE(RawComment, ""), "|", " "), "&", "and")
     & "&data="     & DataPoints
 
 RETURN
 IF(
     ISBLANK(SelectedPosition),
-    "<p style='font-family:Segoe UI;color:#999;padding:20px; font-size:24px'>Выберите сотрудника</p>",
-    "<div style='position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;'>" & 
-    "<iframe src='" & PageURL & "' style='width:100%;height:100%;border:none;'></iframe>" &
+    "<div style='font-family:Segoe UI; color:#94a3b8; display:flex; align-items:center; justify-content:center; height:100vh; font-size:20px; font-weight:700;'>Выберите сотрудника или проект для анализа</div>",
+    "<div style='position:absolute; top:0; left:0; right:0; bottom:0; overflow:hidden;'>" & 
+    "<iframe src='" & PageURL & "' style='width:100%; height:100%; border:none;'></iframe>" &
     "</div>"
 )

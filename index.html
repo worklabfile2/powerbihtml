@@ -5,445 +5,281 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        html, body { 
-            width: 100%; height: 100%; background: #fff; 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            overflow: hidden; 
+        :root {
+            --primary: #013d7e;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --mute: #64748b;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --green: #10b981;
         }
-        
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
         body { display: flex; flex-direction: column; }
 
-        /* ШАПКА С ИНДИКАТОРОМ СТАТУСА */
+        /* ШАПКА */
         .hdr {
-            background: linear-gradient(135deg, #013d7e 0%, #1a5fa8 100%);
-            padding: 22px 30px; flex-shrink: 0; 
-            display: flex; justify-content: space-between; align-items: center;
+            background: var(--primary); padding: 16px 25px; flex-shrink: 0;
+            display: flex; justify-content: space-between; align-items: center; color: white;
         }
-        .hdr-left { display: flex; align-items: center; gap: 18px; }
-        
-        /* ИНДИКАТОР СТАТУСА ПОЗИЦИИ */
-        .status-indicator {
-            width: 18px; height: 18px; border-radius: 50%; 
-            flex-shrink: 0;
-        }
-        .status-indicator.green { 
-            background: #10b981; 
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.8), 0 0 40px rgba(16, 185, 129, 0.4);
-        }
-        .status-indicator.yellow { 
-            background: #f59e0b; 
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.8), 0 0 40px rgba(245, 158, 11, 0.4);
-        }
-        .status-indicator.red { 
-            background: #ef4444; 
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.4);
-        }
-        
-        .emp-name { font-size: 26px; font-weight: 900; color: #fff; line-height: 1.1; }
-        .emp-sub { 
-            font-size: 12px; color: rgba(255,255,255,0.85); 
-            text-transform: uppercase; font-weight: 700; 
-            letter-spacing: 1.5px; margin-top: 5px; 
+        .emp-name { font-size: 22px; font-weight: 900; }
+        .emp-sub { font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* СЕТКА DASHBOARD (L-LAYOUT) */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 300px; /* График слева, 4 карточки справа */
+            grid-template-rows: 1fr auto;    /* График сверху, блоки снизу */
+            gap: 20px;
+            padding: 20px;
+            flex: 1;
+            min-height: 0;
         }
 
-        .lang-sw {
-            background: #fff; border: none; color: #013d7e; 
-            padding: 8px 16px; border-radius: 6px; 
-            font-size: 13px; font-weight: 800; cursor: pointer;
-            transition: all 0.2s;
-        }
-        .lang-sw:hover { transform: scale(1.05); }
-
-        /* ИНФО-ПАНЕЛЬ */
-        .info-bar {
-            background: #f8fafc; padding: 14px 30px; 
-            display: flex; flex-wrap: wrap; gap: 35px; 
-            border-bottom: 2px solid #e2e8f0; flex-shrink: 0;
-        }
-        .info-item { display: flex; flex-direction: column; }
-        .info-label { 
-            font-size: 10px; text-transform: uppercase; 
-            font-weight: 800; color: #64748b; margin-bottom: 4px; 
-        }
-        .info-val { font-size: 17px; font-weight: 800; color: #013d7e; }
-
-        .main { flex: 1; display: flex; overflow: hidden; }
-        
-        /* ЛЕВАЯ ЧАСТЬ - ГРАФИК */
-        .left-section { 
-            flex: 1; 
-            padding: 20px 25px; 
-            display: flex; 
-            flex-direction: column;
-            min-width: 0;
-            background: #fff;
-        }
-        .chart-box { flex: 1; width: 100%; min-height: 0; }
-
-        /* ПРАВАЯ ЧАСТЬ - КАРТОЧКИ */
-        .right-section { 
-            width: 420px; 
-            background: #f8fafc; 
-            padding: 20px 18px 20px 18px; 
-            overflow-y: auto;
-            border-left: 2px solid #e2e8f0;
-            flex-shrink: 0;
-        }
-        .right-section::-webkit-scrollbar { width: 6px; }
-        .right-section::-webkit-scrollbar-track { background: #f1f5f9; }
-        .right-section::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-
-        /* КОММЕНТАРИЙ */
-        .cmnt { 
-            background: linear-gradient(135deg, #013d7e 0%, #1a5fa8 100%);
-            border-radius: 10px; 
-            padding: 14px 18px; 
-            color: #fff; 
-            margin-bottom: 18px; 
-            font-size: 13px; 
-            line-height: 1.5; 
-            font-weight: 500;
-            box-shadow: 0 2px 8px rgba(1, 61, 126, 0.2);
+        /* ЛЕВО ВЕРХ: ГРАФИК */
+        .chart-section {
+            background: var(--card); border-radius: 12px; border: 1px solid var(--border);
+            padding: 20px; display: flex; flex-direction: column; min-width: 0;
         }
 
-        /* КАРТОЧКИ */
-        .metrics-grid { 
-            display: flex;
-            flex-direction: column;
-            gap: 12px; 
-        }
-        
-        .m { 
-            background: #fff; 
-            border-radius: 10px; 
-            padding: 16px; 
-            border: 2px solid #e2e8f0; 
-            display: flex; 
-            flex-direction: column;
-            transition: all 0.2s;
-        }
-        .m:hover { 
-            border-color: #cbd5e1; 
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-        .ml { 
-            font-size: 10px; font-weight: 800; 
-            text-transform: uppercase; color: #64748b; 
-            margin-bottom: 7px; letter-spacing: 0.5px;
-        }
-        .mv { 
-            font-size: 24px; font-weight: 900; 
-            color: #0f172a; letter-spacing: -0.5px; 
-        }
-        .msub { 
-            font-size: 11px; color: #94a3b8; 
-            margin-top: 5px; font-weight: 600; 
+        /* ПРАВО ВЕРХ: 4 КАРТОЧКИ */
+        .top-right-kpi {
+            display: flex; flex-direction: column; gap: 12px;
         }
 
-        .badge { 
-            display: inline-block; 
-            padding: 6px 12px; 
-            border-radius: 6px; 
-            font-size: 11px; 
-            font-weight: 800; 
-            margin-top: 7px; 
-            width: fit-content; 
+        /* НИЖНИЕ БЛОКИ */
+        .bottom-section {
+            grid-column: 1 / -1; /* Растягиваем на всю ширину */
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
         }
-        .badge.y { background: #fee2e2; color: #dc2626; }
-        .badge.n { background: #e2e8f0; color: #64748b; }
 
-        /* ОЧЕНЬ ЯРКИЕ ИНДИКАТОРЫ */
-        .status-green { color: #10b981 !important; font-weight: 900 !important; }
-        .status-yellow { color: #f59e0b !important; font-weight: 900 !important; }
-        .status-red { color: #ef4444 !important; font-weight: 900 !important; }
-        .val-up { color: #10b981; font-weight: 900; }
-        .val-down { color: #ef4444; font-weight: 900; }
-
-        /* СКРЫТЫЙ SI */
-        .hidden-metric {
-            font-size: 7px;
-            color: #e2e8f0;
-            margin-top: 15px;
-            text-align: center;
-            opacity: 0.4;
+        .block-card {
+            background: var(--card); border-radius: 12px; border: 1px solid var(--border);
+            padding: 15px 20px; min-height: 140px;
         }
+
+        .block-title {
+            font-size: 11px; font-weight: 800; color: var(--mute);
+            text-transform: uppercase; margin-bottom: 12px;
+            border-bottom: 1px solid var(--border); padding-bottom: 6px;
+            display: flex; justify-content: space-between;
+        }
+
+        /* ЭЛЕМЕНТЫ МЕТРИК */
+        .m-item { display: flex; flex-direction: column; }
+        .m-label { font-size: 10px; font-weight: 800; color: var(--mute); text-transform: uppercase; margin-bottom: 4px; }
+        .m-val { font-size: 19px; font-weight: 900; color: #0f172a; }
+        .m-sub { font-size: 10px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+
+        /* КАРТОЧКА KPI (ПРАВАЯ ПАНЕЛЬ) */
+        .side-card {
+            background: var(--card); padding: 14px; border-radius: 10px;
+            border: 1px solid var(--border); transition: 0.2s;
+        }
+        .side-card:hover { border-color: #cbd5e1; transform: translateY(-2px); }
+
+        /* ИНДИКАТОРЫ */
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; margin-top: 5px; }
+        .bg-red { background: #fee2e2; color: var(--red); }
+        .bg-green { background: #dcfce7; color: var(--green); }
+        .status-red { color: var(--red) !important; }
+        .status-yellow { color: var(--yellow) !important; }
+        .status-green { color: var(--green) !important; }
+
+        canvas { width: 100% !important; height: 100% !important; }
     </style>
 </head>
 <body>
-<div id="root" style="display:contents"></div>
+
+<header class="hdr">
+    <div>
+        <div class="emp-name" id="userName">Loading...</div>
+        <div class="emp-sub" id="userSub">Project Performance Dashboard</div>
+    </div>
+    <div style="opacity: 0.4; font-weight: 900; font-size: 12px;">WTW 2026</div>
+</header>
+
+<main class="dashboard">
+    <div class="chart-section">
+        <div class="block-title">Profitability Trend</div>
+        <div style="flex:1; min-height: 0;"><canvas id="ch"></canvas></div>
+    </div>
+
+    <div class="top-right-kpi">
+        <div class="side-card">
+            <div class="m-label" id="L_avgM">Avg Profitability</div>
+            <div class="m-val" id="avgProfValue">0.0%</div>
+        </div>
+        <div class="side-card">
+            <div class="m-label" id="L_salT">Salary + Tax</div>
+            <div class="m-val" id="salTaxValue">—</div>
+            <div class="m-sub" id="salAvgSub"></div>
+        </div>
+        <div class="side-card">
+            <div class="m-label" id="L_iron">Iron List</div>
+            <div id="ironBadge"></div>
+        </div>
+        <div class="side-card">
+            <div class="m-label" id="L_bench">2nd Bench</div>
+            <div id="benchBadge"></div>
+        </div>
+    </div>
+
+    <div class="bottom-section">
+        <div class="block-card">
+            <div class="block-title" id="L_empTitle">Сотрудник</div>
+            <div class="metrics-grid">
+                <div class="m-item">
+                    <div class="m-label" id="L_rate">Rate Review</div>
+                    <div class="m-val" id="rateDate">01.10.2025</div>
+                    <div class="m-sub" id="rateSub"></div>
+                </div>
+                <div class="m-item">
+                    <div class="m-label" id="L_pr">Last PR</div>
+                    <div class="m-val" id="prDate">—</div>
+                </div>
+                <div class="m-item">
+                    <div class="m-label" id="L_start">Start Date</div>
+                    <div class="m-val" id="startDate">—</div>
+                </div>
+                <div class="m-item">
+                    <div class="m-label" id="L_stop">Stop Date</div>
+                    <div class="m-val" id="stopDate">—</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="block-card">
+            <div class="block-title" id="L_projTitle">Проект</div>
+            <div class="metrics-grid">
+                <div class="m-item">
+                    <div class="m-label">Seniority Index</div>
+                    <div class="m-val" id="siValue">0.00</div>
+                    <div class="m-sub" id="siZoneSub">Zone -</div>
+                </div>
+                <div class="m-item">
+                    <div class="m-label">Project FTE</div>
+                    <div class="m-val" id="fteValue">1.0</div>
+                </div>
+                <div class="m-item">
+                    <div class="m-label">Project Margin</div>
+                    <div class="m-val status-green">12.4%</div>
+                </div>
+                <div class="m-item">
+                    <div class="m-label" id="L_ot">Overtimes</div>
+                    <div class="m-val" id="otValue">—</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
 
 <script>
 (function(){
     const q = new URLSearchParams(location.search);
-    const langId = (q.get('lang') || 'ru').toLowerCase();
+    const lang = (q.get('lang') || 'ru').toLowerCase();
     
+    // Переводы
     const T = {
-        ru: { 
-            avgM: 'Средняя рентабельность', month: 'мес. назад', rateL: 'Пересмотр Рейта', pr: 'Последний PR',
-            si: 'Seniority Index', salT: 'ЗП + Налоги', ot: 'Овертаймы', iron: 'Iron List', ironRM: 'Iron List RM',
-            yes: 'Да', no: 'Нет', start: 'Старт позиции', stop: 'Стоп позиции', 
-            bench: '2nd Bench', tech: 'Технология', lvl: 'Уровень', reg: 'Регион', 
-            rev: 'Выручка', prof: 'Прибыль', ironDate: 'Дата'
-        },
-        en: { 
-            avgM: 'Avg Profitability', month: 'mo. ago', rateL: 'Rate Review', pr: 'Last PR',
-            si: 'Seniority Index', salT: 'Salary + Tax', ot: 'Overtimes', iron: 'Iron List', ironRM: 'Iron List RM',
-            yes: 'Yes', no: 'No', start: 'Position Start', stop: 'Position Stop', 
-            bench: '2nd Bench', tech: 'Technology', lvl: 'Level', reg: 'Region', 
-            rev: 'Revenue', prof: 'Profit', ironDate: 'Date'
-        }
-    }[langId];
+        ru: { avgM: 'Сред. Рентабельность', salT: 'ЗП + Налоги', iron: 'Iron List', bench: '2nd Bench', rate: 'Рейт ревью', pr: 'Последний PR', ot: 'Овертаймы', start: 'Старт', stop: 'Стоп', emp: 'Сотрудник', proj: 'Проект', mo: 'мес. назад' },
+        en: { avgM: 'Avg Profitability', salT: 'Salary + Tax', iron: 'Iron List', bench: '2nd Bench', rate: 'Rate Review', pr: 'Last PR', ot: 'Overtimes', start: 'Start', stop: 'Stop', emp: 'Employee', proj: 'Project', mo: 'mo. ago' }
+    }[lang];
 
-    const MO = {
-        ru: ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'],
-        en: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-    }[langId];
+    // Применяем переводы
+    document.getElementById('L_avgM').innerText = T.avgM;
+    document.getElementById('L_salT').innerText = T.salT;
+    document.getElementById('L_iron').innerText = T.iron;
+    document.getElementById('L_bench').innerText = T.bench;
+    document.getElementById('L_rate').innerText = T.rate;
+    document.getElementById('L_pr').innerText = T.pr;
+    document.getElementById('L_ot').innerText = T.ot;
+    document.getElementById('L_start').innerText = T.start;
+    document.getElementById('L_stop').innerText = T.stop;
+    document.getElementById('L_empTitle').innerText = T.emp;
+    document.getElementById('L_projTitle').innerText = T.proj;
 
-    function fmtLabel(s){
-        if(!s) return '';
-        const parts = s.split(/[.\-\/]/);
-        if(parts.length < 2) return s;
-        const mIdx = parseInt(parts[1]) - 1;
-        return MO[mIdx] + " " + (parts[2] ? parts[2].slice(-2) : '');
-    }
+    // Вспомогательные функции
+    const fmtM = (v) => v ? '$' + parseInt(v).toLocaleString() : '—';
+    const iy = (v) => v && (v==='1' || v.toLowerCase()==='yes' || v.toLowerCase()==='да');
 
-    function fmtP(v) { return (v * 100).toFixed(1).replace('.', ',') + '%'; }
+    // Наполнение данными
+    document.getElementById('userName').innerText = q.get('name') || 'Mayilvahan Vijay';
+    document.getElementById('userSub').innerText = (q.get('tech') || 'Data Engineer') + ' • ' + (q.get('lvl') || 'M1');
     
-    function fmtM(v) { 
-        if(!v || v === '0' || v === '—') return '—';
-        return (langId==='ru' ? '$ ' : '$') + parseInt(v).toLocaleString(langId==='ru'?'ru-RU':'en-US'); 
-    }
+    // SI Logic
+    const si = parseFloat(q.get('si')) || 2.45;
+    const siEl = document.getElementById('siValue');
+    siEl.innerText = si.toFixed(2);
+    let zone = 1;
+    if (si < 2.99) { siEl.classList.add('status-green'); zone = 3; }
+    else if (si < 3.25) { siEl.classList.add('status-yellow'); zone = 2; }
+    else { siEl.classList.add('status-red'); zone = 1; }
+    document.getElementById('siZoneSub').innerText = 'Zone ' + zone;
 
-    function getDiffMonths(dateStr) {
-        if (!dateStr || dateStr === '—') return -1;
-        const p = dateStr.split('.');
-        if (p.length < 3) return -1;
-        const d = new Date(p[2], p[1]-1, p[0]);
-        const now = new Date();
-        const diff = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
-        return diff > 0 ? diff : 0;
-    }
+    // Карточки KPI
+    const saltax = parseFloat(q.get('saltax')) || 14166;
+    const avgsal = parseFloat(q.get('avgsal')) || 12000;
+    document.getElementById('salTaxValue').innerText = fmtM(saltax);
+    document.getElementById('salAvgSub').innerText = 'Avg: ' + fmtM(avgsal);
+    if(saltax > avgsal) document.getElementById('salTaxValue').classList.add('status-red');
 
-    // SI
-    const siVal = parseFloat(q.get('si')) || 2.00;
-    let siClass = '';
-    if (siVal < 2.99) siClass = 'status-green';
-    else if (siVal >= 3 && siVal <= 3.24) siClass = 'status-yellow';
-    else if (siVal >= 3.25) siClass = 'status-red';
+    document.getElementById('ironBadge').innerHTML = `<span class="badge ${iy(q.get('iron'))?'bg-green':'bg-red'}">${iy(q.get('iron'))?'YES':'NO'}</span>`;
+    document.getElementById('benchBadge').innerHTML = `<span class="badge ${iy(q.get('bench'))?'bg-green':'bg-red'}">${iy(q.get('bench'))?'YES':'NO'}</span>`;
+    
+    // Даты
+    document.getElementById('rateDate').innerText = q.get('ratedate') || '01.10.2025';
+    document.getElementById('prDate').innerText = q.get('prdate') || '15.01.2026';
+    document.getElementById('startDate').innerText = q.get('start') || '01.01.2024';
+    const stopD = q.get('stop') || '01.12.2026';
+    document.getElementById('stopDate').innerText = stopD;
+    document.getElementById('stopDate').classList.add('status-red');
 
-    // Rate Review
-    const rateDiff = getDiffMonths(q.get('ratedate'));
-    const rateClass = rateDiff > 12 ? 'status-red' : '';
+    document.getElementById('otValue').innerText = fmtM(q.get('ot') || 240);
+    document.getElementById('fteValue').innerText = q.get('fte') || '1.0';
 
-    // Stop Date
-    const stopDateStr = q.get('stop');
-    let stopClass = '';
-    if (stopDateStr && stopDateStr !== '—') {
-        const p = stopDateStr.split('.');
-        if (p.length >= 3) {
-            const stopDate = new Date(p[2], p[1]-1, p[0]);
-            const now = new Date();
-            const diffDays = (stopDate - now) / (1000 * 60 * 60 * 24);
-            if (diffDays >= 0 && diffDays <= 30) stopClass = 'status-red';
-        }
-    }
-
-    // График
-    const dataRaw = q.get('data') || '';
-    let totalRev = 0, totalProf = 0;
-    const points = dataRaw.split('|').filter(x => x).map(s => {
+    // ГРАФИК
+    const dataRaw = q.get('data') || "01.25:10000:720:2|02.25:11000:800:2|03.25:10500:400:1";
+    let tRev = 0, tProf = 0;
+    const points = dataRaw.split('|').map(s => {
         const p = s.split(':');
         const rev = parseFloat(p[1]) || 0;
         const prof = parseFloat(p[2]) || 0;
-        totalRev += rev; totalProf += prof;
-        return { 
-            label: fmtLabel(p[0]), 
-            margin: rev !== 0 ? (prof / rev) : 0, 
-            zone: parseInt(p[3]) || 2,
-            revenue: rev,
-            profit: prof
-        };
+        tRev += rev; tProf += prof;
+        return { label: p[0], margin: rev?((prof/rev)*100):0, zone: parseInt(p[3])||2 };
     });
 
-    const displayPoints = points.length ? points : [
-        {label: 'май 25', margin: 0.089, revenue: 10000, profit: 890, zone: 2},
-        {label: 'июн 25', margin: 0.067, revenue: 10000, profit: 670, zone: 2},
-        {label: 'июл 25', margin: 0.076, revenue: 10000, profit: 760, zone: 2},
-        {label: 'авг 25', margin: 0.070, revenue: 10000, profit: 700, zone: 2},
-        {label: 'сен 25', margin: 0.069, revenue: 10000, profit: 690, zone: 2},
-        {label: 'окт 25', margin: 0.076, revenue: 10000, profit: 760, zone: 1},
-        {label: 'ноя 25', margin: 0.075, revenue: 10000, profit: 750, zone: 1},
-        {label: 'дек 25', margin: 0.067, revenue: 10000, profit: 670, zone: 1},
-        {label: 'янв 26', margin: 0.058, revenue: 10000, profit: 580, zone: 1}
-    ];
-
-    const avgMargin = totalRev !== 0 ? (totalProf / totalRev) : 0.072;
-    
-    // ИНДИКАТОР ПОЗИЦИИ (на основе средней рентабельности)
-    let statusClass = 'green';
-    if (avgMargin < 0.05) statusClass = 'red';
-    else if (avgMargin >= 0.05 && avgMargin < 0.1) statusClass = 'yellow';
-    else statusClass = 'green';
-    
-    // ЗП + НАЛОГИ С ЦВЕТОМ (сравнение со средней)
-    const avgSalary = parseFloat(q.get('avgsal')) || 3000;
-    const salaryTax = parseFloat(q.get('saltax')) || 4963;
-    let salaryClass = '';
-    if (salaryTax > avgSalary) salaryClass = 'status-red';
-    else if (salaryTax < avgSalary) salaryClass = 'status-green';
-    
-    const iy = (v) => v && (v.toLowerCase()==='yes' || v==='1' || v.toLowerCase()==='да');
-
-    document.getElementById('root').innerHTML = `
-        <div class="hdr">
-            <div class="hdr-left">
-                <div class="status-indicator ${statusClass}"></div>
-                <div>
-                    <div class="emp-name">${q.get('name') || 'Grigoryan Vahan'}</div>
-                    <div class="emp-sub">Space (Neobank) • Performance Dashboard</div>
-                </div>
-            </div>
-            <button class="lang-sw" id="swBtn">${langId.toUpperCase()}</button>
-        </div>
-        <div class="info-bar">
-            <div class="info-item"><div class="info-label">${T.tech}</div><div class="info-val">${q.get('tech')||'iOS'}</div></div>
-            <div class="info-item"><div class="info-label">${T.lvl}</div><div class="info-val">${q.get('lvl')||'M2'}</div></div>
-            <div class="info-item"><div class="info-label">${T.reg}</div><div class="info-val">${q.get('reg')||'CASPI'}</div></div>
-        </div>
-        <div class="main">
-            <div class="left-section">
-                <div class="chart-box"><canvas id="ch"></canvas></div>
-            </div>
-            <div class="right-section">
-                ${q.get('comment') ? `<div class="cmnt">💬 ${q.get('comment')}</div>` : ''}
-                <div class="metrics-grid">
-                    <div class="m">
-                        <div class="ml">${T.avgM}</div>
-                        <div class="mv ${avgMargin >= 0.2 ? 'val-up' : avgMargin < 0.05 ? 'val-down' : ''}">${fmtP(avgMargin)}</div>
-                    </div>
-                    <div class="m">
-                        <div class="ml">${T.salT}</div>
-                        <div class="mv ${salaryClass}">${fmtM(salaryTax)}</div>
-                        ${avgSalary ? `<div class="msub">Средняя: ${fmtM(avgSalary)}</div>` : ''}
-                    </div>
-                    <div class="m">
-                        <div class="ml">${T.ot}</div>
-                        <div class="mv">${fmtM(q.get('ot'))}</div>
-                    </div>
-                    <div class="m">
-                        <div class="ml">${T.rateL}</div>
-                        <div class="mv ${rateClass}">${q.get('ratedate')||'01.10.2025'}</div>
-                        <div class="msub">${rateDiff >= 0 ? rateDiff + ' ' + T.month : '4 мес. назад'}</div>
-                    </div>
-                    <div class="m">
-                        <div class="ml">${T.pr}</div>
-                        <div class="mv">${q.get('prdate')||'—'}</div>
-                        ${getDiffMonths(q.get('prdate')) >= 0 ? `<div class="msub">${getDiffMonths(q.get('prdate'))} ${T.month}</div>` : ''}
-                    </div>
-                    <div class="m">
-                        <div class="ml">${T.start}</div>
-                        <div class="mv">${q.get('start')||'—'}</div>
-                    </div>
-                    <div class="m">
-                        <div class="ml">${T.stop}</div>
-                        <div class="mv ${stopClass}">${q.get('stop')||'01.12.2026'}</div>
-                    </div>
-                    <div class="m">
-                        <div class="ml">${T.bench}</div>
-                        <span class="badge ${iy(q.get('bench'))?'y':'n'}">${iy(q.get('bench'))?T.yes:T.no}</span>
-                    </div>
-                    <div class="m">
-                        <div class="ml">${T.iron}</div>
-                        <span class="badge ${iy(q.get('iron'))?'y':'n'}">${iy(q.get('iron'))?T.yes:T.no}</span>
-                        <div class="msub">${T.ironDate}: ${q.get('irondate')||'—'}</div>
-                    </div>
-                    <div class="m">
-                        <div class="ml">${T.ironRM}</div>
-                        <span class="badge ${iy(q.get('ironrm'))?'y':'n'}">${iy(q.get('ironrm'))?T.yes:T.no}</span>
-                    </div>
-                </div>
-                <div class="hidden-metric">SI: ${siVal.toFixed(2)}</div>
-            </div>
-        </div>`;
-
-    document.getElementById('swBtn').onclick = () => {
-        const u = new URL(window.location);
-        u.searchParams.set('lang', langId === 'ru' ? 'en' : 'ru');
-        window.location.href = u.toString();
-    };
-
-    // ЦВЕТА ТОЧЕК ПО ЗОНАМ
-    function getZoneColor(zone) {
-        if (zone === 1) return '#10b981'; // Зеленая зона
-        if (zone === 2) return '#f59e0b'; // Желтая зона
-        if (zone === 3) return '#ef4444'; // Красная зона
-        return '#64748b'; // Серый по умолчанию
-    }
+    const avgM = tRev ? (tProf/tRev)*100 : 7.2;
+    const avgPValue = document.getElementById('avgProfValue');
+    avgPValue.innerText = avgM.toFixed(1) + '%';
+    if(avgM < 5) avgPValue.classList.add('status-red');
 
     const ctx = document.getElementById('ch').getContext('2d');
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: displayPoints.map(p => p.label),
+            labels: points.map(p => p.label),
             datasets: [{
-                data: displayPoints.map(p => p.margin * 100),
+                data: points.map(p => p.margin),
                 borderColor: '#013d7e',
-                borderWidth: 4,
+                borderWidth: 3,
                 tension: 0.4,
-                pointBackgroundColor: displayPoints.map(p => getZoneColor(p.zone)),
-                pointBorderColor: '#fff',
-                pointBorderWidth: 3,
-                pointRadius: 8,
-                pointHoverRadius: 10,
-                fill: false
+                pointBackgroundColor: points.map(p => p.zone===3?'#10b981':p.zone===2?'#f59e0b':'#ef4444'),
+                pointRadius: 6,
+                fill: true,
+                backgroundColor: 'rgba(1, 61, 126, 0.03)'
             }]
         },
         options: {
-            responsive: true, 
-            maintainAspectRatio: false,
-            layout: { padding: { left: 15, right: 15, top: 35, bottom: 15 } },
-            plugins: { 
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(1, 61, 126, 0.95)',
-                    padding: 12,
-                    titleFont: { size: 14, weight: 'bold' },
-                    bodyFont: { size: 13, weight: '600' },
-                    cornerRadius: 8,
-                    callbacks: {
-                        label: (ctx) => {
-                            const p = displayPoints[ctx.dataIndex];
-                            return [
-                                `${T.rev}: ${fmtM(p.revenue)}`,
-                                `${T.prof}: ${fmtM(p.profit)}`
-                            ];
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: { display: false, grace: '30%' },
-                x: { 
-                    grid: { display: false },
-                    ticks: { color: '#64748b', font: { weight: '700', size: 12 } }
-                }
-            }
-        },
-        plugins: [{
-            id: 'labels',
-            afterDatasetsDraw(chart) {
-                const {ctx} = chart;
-                chart.getDatasetMeta(0).data.forEach((p, i) => {
-                    const val = displayPoints[i].margin;
-                    ctx.fillStyle = '#013d7e';
-                    ctx.font = 'bold 13px Segoe UI'; 
-                    ctx.textAlign = 'center';
-                    ctx.fillText(fmtP(val), p.x, p.y - 18);
-                });
-            }
-        }]
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { display: false }, x: { grid: { display: false } } }
+        }
     });
 })();
 </script>
